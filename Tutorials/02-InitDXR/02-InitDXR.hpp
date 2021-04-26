@@ -19,7 +19,7 @@ namespace CppDirectXRayTracing02 {
     private:
         D3D12GraphicsContext mContext;
         static const uint32_t kRtvHeapSize = 3;
-        FrameObject mFrameObjects[kDefaultSwapChainBuffers];
+        FrameObject mFrameObjects[];
         HeapData mRtvHeap;
         HWND mHwnd = nullptr;
         ID3D12Device5Ptr mpDevice;

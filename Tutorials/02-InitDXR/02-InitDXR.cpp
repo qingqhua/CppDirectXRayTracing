@@ -1,7 +1,10 @@
-#include "02-InitDXR.h"
+#pragma once
+#include "02-InitDXR.hpp"
+
 void CppDirectXRayTracing02::Tutorial02::initDXR(HWND winHandle, uint32_t winWidth, uint32_t winHeight)
 {
     mContext = D3D12GraphicsContext();
+    mFrameObjects = new FrameObject[mContext.kDefaultSwapChainBuffers];
     mHwnd = winHandle;
     mSwapChainSize = uvec2(winWidth, winHeight);
 
@@ -77,7 +80,7 @@ void CppDirectXRayTracing02::Tutorial02::onFrameRender()
 {
     uint32_t rtvIndex = beginFrame();
     const float clearColor[4] = { 0.4f, 0.6f, 0.2f, 1.0f };
-    resourceBarrier(mpCmdList, mFrameObjects[rtvIndex].pSwapChainBuffer, D3D12_RESOURCE_STATE_PRESENT, D3D12_RESOURCE_STATE_RENDER_TARGET);
+    mContext.resourceBarrier(mpCmdList, mFrameObjects[rtvIndex].pSwapChainBuffer, D3D12_RESOURCE_STATE_PRESENT, D3D12_RESOURCE_STATE_RENDER_TARGET);
     mpCmdList->ClearRenderTargetView(mFrameObjects[rtvIndex].rtvHandle, clearColor, 0, nullptr);
     endFrame(rtvIndex);
 }

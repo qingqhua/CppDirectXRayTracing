@@ -12,9 +12,13 @@
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="02-InitDXR.cpp" />
+    <ClCompile Include="RTX\D3D12GraphicsContext.cpp" />
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="02-InitDXR.h" />
+    <ClInclude Include="02-InitDXR.hpp" />
+    <ClInclude Include="RTX\D3D12GraphicsContext.hpp" />
+    <ClInclude Include="RTX\FrameObject.hpp" />
+    <ClInclude Include="RTX\HeapData.hpp" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\..\Framework\Framework.vcxproj">

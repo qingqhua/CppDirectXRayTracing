@@ -2,8 +2,25 @@
 <Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <ItemGroup>
     <ClCompile Include="02-InitDXR.cpp" />
+    <ClCompile Include="RTX\D3D12GraphicsContext.cpp">
+      <Filter>RTX</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="02-InitDXR.h" />
+    <ClInclude Include="RTX\D3D12GraphicsContext.hpp">
+      <Filter>RTX</Filter>
+    </ClInclude>
+    <ClInclude Include="RTX\HeapData.hpp">
+      <Filter>RTX</Filter>
+    </ClInclude>
+    <ClInclude Include="RTX\FrameObject.hpp">
+      <Filter>RTX</Filter>
+    </ClInclude>
+    <ClInclude Include="02-InitDXR.hpp" />
+  </ItemGroup>
+  <ItemGroup>
+    <Filter Include="RTX">
+      <UniqueIdentifier>{aff24fca-460b-4f44-a268-b78e811dda5c}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
 </Project>
