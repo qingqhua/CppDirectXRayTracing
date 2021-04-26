@@ -22,7 +22,7 @@ namespace CppDirectXRayTracing02
 
 		uint64_t submitCommandList(ID3D12GraphicsCommandList4Ptr pCmdList, ID3D12CommandQueuePtr pCmdQueue, ID3D12FencePtr pFence, uint64_t fenceValue);
 
-		int kDefaultSwapChainBuffers = 2;
+		uint32_t kDefaultSwapChainBuffers = 2;
 	};
 
 };

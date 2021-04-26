@@ -3,10 +3,10 @@
 
 namespace CppDirectXRayTracing03
 {
-    struct AccelerationStructureBuffer
+    struct AccelerationStructureBuffers
     {
-        ID3D12Resource pScratch;
-        ID3D12Resource pResult;
-        ID3D12Resource pInstanceDesc;  // Used only for top-level AS
-    }
+        ID3D12ResourcePtr pScratch;
+        ID3D12ResourcePtr pResult;
+        ID3D12ResourcePtr pInstanceDesc;  // Used only for top-level AS
+    };
 };

@@ -5,12 +5,11 @@
     <ClCompile Include="RTX\D3D12GraphicsContext.cpp">
       <Filter>RTX</Filter>
     </ClCompile>
-    <ClCompile Include="RTX\AccelerationStructures.cpp">
+    <ClCompile Include="RTX\D3D12AccelerationStructures.cpp">
       <Filter>RTX</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="03-AccelerationStructure.h" />
     <ClInclude Include="RTX\Structs\FrameObject.hpp">
       <Filter>RTX\Structs</Filter>
     </ClInclude>
@@ -23,9 +22,10 @@
     <ClInclude Include="RTX\Structs\AccelerationStructureBuffer.hpp">
       <Filter>RTX\Structs</Filter>
     </ClInclude>
-    <ClInclude Include="RTX\AccelerationStructures.hpp">
+    <ClInclude Include="RTX\D3D12AccelerationStructures.hpp">
       <Filter>RTX</Filter>
     </ClInclude>
+    <ClInclude Include="03-AccelerationStructure.hpp" />
   </ItemGroup>
   <ItemGroup>
     <Filter Include="RTX">

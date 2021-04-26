@@ -1,7 +1,9 @@
 #pragma once
 #include "RTX/Structs/FrameObject.hpp"
 #include "RTX/Structs/HeapData.hpp"
+
 #include "RTX/D3D12GraphicsContext.hpp"
+#include "RTX/D3D12AccelerationStructures.hpp"
 
 namespace CppDirectXRayTracing03 {
     class Application : public Tutorial
@@ -18,9 +20,10 @@ namespace CppDirectXRayTracing03 {
         void endFrame(uint32_t rtvIndex);
 
     private:
+        D3D12AccelerationStructures mAccelerateStruct;
         D3D12GraphicsContext mContext;
         static const uint32_t kRtvHeapSize = 3;
-        FrameObject mFrameObjects[];
+        std::vector<FrameObject> mFrameObjects;
         HeapData mRtvHeap;
         HWND mHwnd = nullptr;
         ID3D12Device5Ptr mpDevice;
@@ -30,7 +33,13 @@ namespace CppDirectXRayTracing03 {
         ID3D12GraphicsCommandList4Ptr mpCmdList;
         ID3D12FencePtr mpFence;
         HANDLE mFenceEvent;
-        uint64_t mFenceValue = 0;
+        uint64_t mFenceValue = 0;    
+        
+        // Acceleration Structure
+        ID3D12ResourcePtr mpVertexBuffer;
+        ID3D12ResourcePtr mpTopLevelAS;
+        ID3D12ResourcePtr mpBottomLevelAS;
+        uint64_t mTlasSize = 0;
     };
 }
 

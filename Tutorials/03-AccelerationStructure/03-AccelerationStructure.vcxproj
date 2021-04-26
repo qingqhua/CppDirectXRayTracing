@@ -12,12 +12,12 @@
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="03-AccelerationStructure.cpp" />
-    <ClCompile Include="RTX\AccelerationStructures.cpp" />
+    <ClCompile Include="RTX\D3D12AccelerationStructures.cpp" />
     <ClCompile Include="RTX\D3D12GraphicsContext.cpp" />
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="03-AccelerationStructure.h" />
-    <ClInclude Include="RTX\AccelerationStructures.hpp" />
+    <ClInclude Include="03-AccelerationStructure.hpp" />
+    <ClInclude Include="RTX\D3D12AccelerationStructures.hpp" />
     <ClInclude Include="RTX\D3D12GraphicsContext.hpp" />
     <ClInclude Include="RTX\Structs\AccelerationStructureBuffer.hpp" />
     <ClInclude Include="RTX\Structs\FrameObject.hpp" />
@@ -32,20 +32,20 @@
     <ProjectGuid>{C01C1C02-26AE-4221-AFF4-54F601FC676C}</ProjectGuid>
     <Keyword>Win32Proj</Keyword>
     <RootNamespace>DXRT</RootNamespace>
-    <WindowsTargetPlatformVersion>10.0.17763.0</WindowsTargetPlatformVersion>
+    <WindowsTargetPlatformVersion>10.0.18362.0</WindowsTargetPlatformVersion>
     <ProjectName>03-AccelerationStructure</ProjectName>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'" Label="Configuration">
     <ConfigurationType>Application</ConfigurationType>
     <UseDebugLibraries>true</UseDebugLibraries>
-    <PlatformToolset>v141</PlatformToolset>
+    <PlatformToolset>v142</PlatformToolset>
     <CharacterSet>Unicode</CharacterSet>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'" Label="Configuration">
     <ConfigurationType>Application</ConfigurationType>
     <UseDebugLibraries>false</UseDebugLibraries>
-    <PlatformToolset>v141</PlatformToolset>
+    <PlatformToolset>v142</PlatformToolset>
     <WholeProgramOptimization>true</WholeProgramOptimization>
     <CharacterSet>Unicode</CharacterSet>
   </PropertyGroup>

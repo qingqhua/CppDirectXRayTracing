@@ -4,7 +4,12 @@
 void CppDirectXRayTracing02::Tutorial02::initDXR(HWND winHandle, uint32_t winWidth, uint32_t winHeight)
 {
     mContext = D3D12GraphicsContext();
-    mFrameObjects = new FrameObject[mContext.kDefaultSwapChainBuffers];
+
+    for (uint32_t i = 0; i < mContext.kDefaultSwapChainBuffers; i++)
+    {
+        mFrameObjects.push_back(FrameObject());
+    }
+    
     mHwnd = winHandle;
     mSwapChainSize = uvec2(winWidth, winHeight);
 
@@ -96,5 +101,5 @@ void CppDirectXRayTracing02::Tutorial02::onShutdown()
 
 int WINAPI WinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstance, _In_ LPSTR lpCmdLine, _In_ int nShowCmd)
 {
-    Framework::run(Tutorial02(), "Tutorial 02 - Initialize DXR");
+    Framework::run(CppDirectXRayTracing02::Tutorial02(), "Tutorial 02 - Initialize DXR");
 }
