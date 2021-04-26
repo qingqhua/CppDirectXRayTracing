@@ -4,16 +4,67 @@
     <Filter Include="Data">
       <UniqueIdentifier>{5feff271-1653-48df-a5a7-dc26fac70e96}</UniqueIdentifier>
     </Filter>
-  </ItemGroup>
-  <ItemGroup>
-    <ClCompile Include="04-RtPipelineState.cpp" />
-  </ItemGroup>
-  <ItemGroup>
-    <ClInclude Include="04-RtPipelineState.h" />
+    <Filter Include="RTX">
+      <UniqueIdentifier>{1abdef3a-70fd-4616-aea5-f0ebfaac5c9d}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="RTX\Structs">
+      <UniqueIdentifier>{386a1097-bd19-4f75-8042-86488a75619b}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <FxCompile Include="Data\04-Shaders.hlsl">
       <Filter>Data</Filter>
     </FxCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="RTX\Structs\AccelerationStructureBuffer.hpp">
+      <Filter>RTX\Structs</Filter>
+    </ClInclude>
+    <ClInclude Include="RTX\Structs\DxilLibrary.hpp">
+      <Filter>RTX\Structs</Filter>
+    </ClInclude>
+    <ClInclude Include="RTX\Structs\ExportAssociation.hpp">
+      <Filter>RTX\Structs</Filter>
+    </ClInclude>
+    <ClInclude Include="RTX\Structs\FrameObject.hpp">
+      <Filter>RTX\Structs</Filter>
+    </ClInclude>
+    <ClInclude Include="RTX\Structs\HeapData.hpp">
+      <Filter>RTX\Structs</Filter>
+    </ClInclude>
+    <ClInclude Include="RTX\Structs\HitProgram.hpp">
+      <Filter>RTX\Structs</Filter>
+    </ClInclude>
+    <ClInclude Include="RTX\Structs\PipelineConfig.hpp">
+      <Filter>RTX\Structs</Filter>
+    </ClInclude>
+    <ClInclude Include="RTX\Structs\RootSignature.hpp">
+      <Filter>RTX\Structs</Filter>
+    </ClInclude>
+    <ClInclude Include="RTX\Structs\ShaderConfig.hpp">
+      <Filter>RTX\Structs</Filter>
+    </ClInclude>
+    <ClInclude Include="RTX\D3D12AccelerationStructures.hpp">
+      <Filter>RTX</Filter>
+    </ClInclude>
+    <ClInclude Include="RTX\D3D12GraphicsContext.hpp">
+      <Filter>RTX</Filter>
+    </ClInclude>
+    <ClInclude Include="RTX\D3D12RTPipeline.hpp">
+      <Filter>RTX</Filter>
+    </ClInclude>
+    <ClInclude Include="04-RtPipelineState.hpp" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="RTX\D3D12AccelerationStructures.cpp">
+      <Filter>RTX</Filter>
+    </ClCompile>
+    <ClCompile Include="RTX\D3D12GraphicsContext.cpp">
+      <Filter>RTX</Filter>
+    </ClCompile>
+    <ClCompile Include="RTX\D3D12RTPipeline.cpp">
+      <Filter>RTX</Filter>
+    </ClCompile>
+    <ClCompile Include="04-RtPipelineState.cpp" />
   </ItemGroup>
 </Project>
