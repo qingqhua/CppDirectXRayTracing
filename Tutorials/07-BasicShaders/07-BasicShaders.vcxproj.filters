@@ -4,16 +4,67 @@
     <Filter Include="Data">
       <UniqueIdentifier>{5feff271-1653-48df-a5a7-dc26fac70e96}</UniqueIdentifier>
     </Filter>
-  </ItemGroup>
-  <ItemGroup>
-    <ClCompile Include="07-BasicShaders.cpp" />
-  </ItemGroup>
-  <ItemGroup>
-    <ClInclude Include="07-BasicShaders.h" />
+    <Filter Include="RTX">
+      <UniqueIdentifier>{36b97c39-9e24-446d-8e71-5de5955f1629}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="RTX\Structs">
+      <UniqueIdentifier>{5ee7fb05-9ce8-4377-9d86-031ff2f79b77}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <FxCompile Include="Data\07-Shaders.hlsl">
       <Filter>Data</Filter>
     </FxCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="RTX\Structs\AccelerationStructureBuffer.hpp">
+      <Filter>RTX\Structs</Filter>
+    </ClInclude>
+    <ClInclude Include="RTX\Structs\DxilLibrary.hpp">
+      <Filter>RTX\Structs</Filter>
+    </ClInclude>
+    <ClInclude Include="RTX\Structs\ExportAssociation.hpp">
+      <Filter>RTX\Structs</Filter>
+    </ClInclude>
+    <ClInclude Include="RTX\Structs\FrameObject.hpp">
+      <Filter>RTX\Structs</Filter>
+    </ClInclude>
+    <ClInclude Include="RTX\Structs\HeapData.hpp">
+      <Filter>RTX\Structs</Filter>
+    </ClInclude>
+    <ClInclude Include="RTX\Structs\HitProgram.hpp">
+      <Filter>RTX\Structs</Filter>
+    </ClInclude>
+    <ClInclude Include="RTX\Structs\PipelineConfig.hpp">
+      <Filter>RTX\Structs</Filter>
+    </ClInclude>
+    <ClInclude Include="RTX\Structs\RootSignature.hpp">
+      <Filter>RTX\Structs</Filter>
+    </ClInclude>
+    <ClInclude Include="RTX\Structs\ShaderConfig.hpp">
+      <Filter>RTX\Structs</Filter>
+    </ClInclude>
+    <ClInclude Include="RTX\D3D12AccelerationStructures.hpp">
+      <Filter>RTX</Filter>
+    </ClInclude>
+    <ClInclude Include="RTX\D3D12GraphicsContext.hpp">
+      <Filter>RTX</Filter>
+    </ClInclude>
+    <ClInclude Include="RTX\D3D12RTPipeline.hpp">
+      <Filter>RTX</Filter>
+    </ClInclude>
+    <ClInclude Include="07-BasicShaders.hpp" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="RTX\D3D12AccelerationStructures.cpp">
+      <Filter>RTX</Filter>
+    </ClCompile>
+    <ClCompile Include="RTX\D3D12GraphicsContext.cpp">
+      <Filter>RTX</Filter>
+    </ClCompile>
+    <ClCompile Include="RTX\D3D12RTPipeline.cpp">
+      <Filter>RTX</Filter>
+    </ClCompile>
+    <ClCompile Include="07-BasicShaders.cpp" />
   </ItemGroup>
 </Project>

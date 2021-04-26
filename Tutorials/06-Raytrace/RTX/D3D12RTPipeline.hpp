@@ -2,7 +2,7 @@
 #include "Structs/DxilLibrary.hpp"
 #include "Structs/RootSignature.hpp"
 
-namespace CppDirectXRayTracing05
+namespace CppDirectXRayTracing06
 {
 	class D3D12RTPipeline
 	{
@@ -14,7 +14,7 @@ namespace CppDirectXRayTracing05
 		RootSignatureDesc createRayGenRootDesc();
 		DxilLibrary createDxilLibrary();
 
-		const WCHAR* kShaderName = L"Data/05-Shaders.hlsl";
+		const WCHAR* kShaderName = L"Data/06-Shaders.hlsl";
 		const WCHAR* kRayGenShader = L"rayGen";
 		const WCHAR* kMissShader = L"miss";
 		const WCHAR* kClosestHitShader = L"chs";

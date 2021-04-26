@@ -1,7 +1,7 @@
 #pragma once
 #include "Framework.h"
 
-namespace CppDirectXRayTracing05
+namespace CppDirectXRayTracing07
 {
     struct PipelineConfig
     {

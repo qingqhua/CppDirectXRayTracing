@@ -1,7 +1,7 @@
 #pragma once
 #include "D3D12AccelerationStructures.hpp"
 
-ID3D12ResourcePtr CppDirectXRayTracing05::D3D12AccelerationStructures::createBuffer(ID3D12Device5Ptr pDevice, uint64_t size, D3D12_RESOURCE_FLAGS flags, D3D12_RESOURCE_STATES initState, const D3D12_HEAP_PROPERTIES& heapProps)
+ID3D12ResourcePtr CppDirectXRayTracing07::D3D12AccelerationStructures::createBuffer(ID3D12Device5Ptr pDevice, uint64_t size, D3D12_RESOURCE_FLAGS flags, D3D12_RESOURCE_STATES initState, const D3D12_HEAP_PROPERTIES& heapProps)
 {
     D3D12_RESOURCE_DESC bufDesc = {};
     bufDesc.Alignment = 0;
@@ -21,7 +21,7 @@ ID3D12ResourcePtr CppDirectXRayTracing05::D3D12AccelerationStructures::createBuf
     return pBuffer;
 }
 
-ID3D12ResourcePtr CppDirectXRayTracing05::D3D12AccelerationStructures::createTriangleVB(ID3D12Device5Ptr pDevice)
+ID3D12ResourcePtr CppDirectXRayTracing07::D3D12AccelerationStructures::createTriangleVB(ID3D12Device5Ptr pDevice)
 {
     const vec3 vertices[] =
     {
@@ -39,7 +39,7 @@ ID3D12ResourcePtr CppDirectXRayTracing05::D3D12AccelerationStructures::createTri
     return pBuffer;
 }
 
-CppDirectXRayTracing05::AccelerationStructureBuffers CppDirectXRayTracing05::D3D12AccelerationStructures::createBottomLevelAS(ID3D12Device5Ptr pDevice, ID3D12GraphicsCommandList4Ptr pCmdList, ID3D12ResourcePtr pVB)
+CppDirectXRayTracing07::AccelerationStructureBuffers CppDirectXRayTracing07::D3D12AccelerationStructures::createBottomLevelAS(ID3D12Device5Ptr pDevice, ID3D12GraphicsCommandList4Ptr pCmdList, ID3D12ResourcePtr pVB)
 {
     D3D12_RAYTRACING_GEOMETRY_DESC geomDesc = {};
     geomDesc.Type = D3D12_RAYTRACING_GEOMETRY_TYPE_TRIANGLES;
@@ -82,7 +82,7 @@ CppDirectXRayTracing05::AccelerationStructureBuffers CppDirectXRayTracing05::D3D
     return buffers;
 }
 
-CppDirectXRayTracing05::AccelerationStructureBuffers CppDirectXRayTracing05::D3D12AccelerationStructures::createTopLevelAS(ID3D12Device5Ptr pDevice, ID3D12GraphicsCommandList4Ptr pCmdList, ID3D12ResourcePtr pBottomLevelAS, uint64_t& tlasSize)
+CppDirectXRayTracing07::AccelerationStructureBuffers CppDirectXRayTracing07::D3D12AccelerationStructures::createTopLevelAS(ID3D12Device5Ptr pDevice, ID3D12GraphicsCommandList4Ptr pCmdList, ID3D12ResourcePtr pBottomLevelAS, uint64_t& tlasSize)
 {
     // First, get the size of the TLAS buffers and create them
     D3D12_BUILD_RAYTRACING_ACCELERATION_STRUCTURE_INPUTS inputs = {};

@@ -4,16 +4,67 @@
     <Filter Include="Data">
       <UniqueIdentifier>{5feff271-1653-48df-a5a7-dc26fac70e96}</UniqueIdentifier>
     </Filter>
-  </ItemGroup>
-  <ItemGroup>
-    <ClCompile Include="06-Raytrace.cpp" />
-  </ItemGroup>
-  <ItemGroup>
-    <ClInclude Include="06-Raytrace.h" />
+    <Filter Include="RTX">
+      <UniqueIdentifier>{04074867-854e-4d7e-9e9c-610a3b2290ae}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="RTX\Structs">
+      <UniqueIdentifier>{c7abc9c6-775c-4700-9be4-eedeccf6cacd}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <FxCompile Include="Data\06-Shaders.hlsl">
       <Filter>Data</Filter>
     </FxCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="RTX\Structs\AccelerationStructureBuffer.hpp">
+      <Filter>RTX\Structs</Filter>
+    </ClInclude>
+    <ClInclude Include="RTX\Structs\DxilLibrary.hpp">
+      <Filter>RTX\Structs</Filter>
+    </ClInclude>
+    <ClInclude Include="RTX\Structs\ExportAssociation.hpp">
+      <Filter>RTX\Structs</Filter>
+    </ClInclude>
+    <ClInclude Include="RTX\Structs\FrameObject.hpp">
+      <Filter>RTX\Structs</Filter>
+    </ClInclude>
+    <ClInclude Include="RTX\Structs\HeapData.hpp">
+      <Filter>RTX\Structs</Filter>
+    </ClInclude>
+    <ClInclude Include="RTX\Structs\HitProgram.hpp">
+      <Filter>RTX\Structs</Filter>
+    </ClInclude>
+    <ClInclude Include="RTX\Structs\PipelineConfig.hpp">
+      <Filter>RTX\Structs</Filter>
+    </ClInclude>
+    <ClInclude Include="RTX\Structs\RootSignature.hpp">
+      <Filter>RTX\Structs</Filter>
+    </ClInclude>
+    <ClInclude Include="RTX\Structs\ShaderConfig.hpp">
+      <Filter>RTX\Structs</Filter>
+    </ClInclude>
+    <ClInclude Include="RTX\D3D12AccelerationStructures.hpp">
+      <Filter>RTX</Filter>
+    </ClInclude>
+    <ClInclude Include="RTX\D3D12GraphicsContext.hpp">
+      <Filter>RTX</Filter>
+    </ClInclude>
+    <ClInclude Include="RTX\D3D12RTPipeline.hpp">
+      <Filter>RTX</Filter>
+    </ClInclude>
+    <ClInclude Include="06-Raytrace.hpp" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="RTX\D3D12AccelerationStructures.cpp">
+      <Filter>RTX</Filter>
+    </ClCompile>
+    <ClCompile Include="RTX\D3D12GraphicsContext.cpp">
+      <Filter>RTX</Filter>
+    </ClCompile>
+    <ClCompile Include="RTX\D3D12RTPipeline.cpp">
+      <Filter>RTX</Filter>
+    </ClCompile>
+    <ClCompile Include="06-Raytrace.cpp" />
   </ItemGroup>
 </Project>

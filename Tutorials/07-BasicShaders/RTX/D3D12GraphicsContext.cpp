@@ -1,7 +1,7 @@
 #pragma once
 #include "D3D12GraphicsContext.hpp"
 
-IDXGISwapChain3Ptr CppDirectXRayTracing05::D3D12GraphicsContext::createDxgiSwapChain(IDXGIFactory4Ptr pFactory, HWND hwnd, uint32_t width, uint32_t height, DXGI_FORMAT format, ID3D12CommandQueuePtr pCommandQueue)
+IDXGISwapChain3Ptr CppDirectXRayTracing07::D3D12GraphicsContext::createDxgiSwapChain(IDXGIFactory4Ptr pFactory, HWND hwnd, uint32_t width, uint32_t height, DXGI_FORMAT format, ID3D12CommandQueuePtr pCommandQueue)
 {
     DXGI_SWAP_CHAIN_DESC1 swapChainDesc = {};
     swapChainDesc.BufferCount = kDefaultSwapChainBuffers;
@@ -28,7 +28,7 @@ IDXGISwapChain3Ptr CppDirectXRayTracing05::D3D12GraphicsContext::createDxgiSwapC
     return pSwapChain3;
 }
 
-ID3D12Device5Ptr CppDirectXRayTracing05::D3D12GraphicsContext::createDevice(IDXGIFactory4Ptr pDxgiFactory)
+ID3D12Device5Ptr CppDirectXRayTracing07::D3D12GraphicsContext::createDevice(IDXGIFactory4Ptr pDxgiFactory)
 {
     // Find the HW adapter
     IDXGIAdapter1Ptr pAdapter;
@@ -63,7 +63,7 @@ ID3D12Device5Ptr CppDirectXRayTracing05::D3D12GraphicsContext::createDevice(IDXG
     return nullptr;
 }
 
-ID3D12CommandQueuePtr CppDirectXRayTracing05::D3D12GraphicsContext::createCommandQueue(ID3D12Device5Ptr pDevice)
+ID3D12CommandQueuePtr CppDirectXRayTracing07::D3D12GraphicsContext::createCommandQueue(ID3D12Device5Ptr pDevice)
 {
     ID3D12CommandQueuePtr pQueue;
     D3D12_COMMAND_QUEUE_DESC cqDesc = {};
@@ -73,7 +73,7 @@ ID3D12CommandQueuePtr CppDirectXRayTracing05::D3D12GraphicsContext::createComman
     return pQueue;
 }
 
-ID3D12DescriptorHeapPtr CppDirectXRayTracing05::D3D12GraphicsContext::createDescriptorHeap(ID3D12Device5Ptr pDevice, uint32_t count, D3D12_DESCRIPTOR_HEAP_TYPE type, bool shaderVisible)
+ID3D12DescriptorHeapPtr CppDirectXRayTracing07::D3D12GraphicsContext::createDescriptorHeap(ID3D12Device5Ptr pDevice, uint32_t count, D3D12_DESCRIPTOR_HEAP_TYPE type, bool shaderVisible)
 {
     D3D12_DESCRIPTOR_HEAP_DESC desc = {};
     desc.NumDescriptors = count;
@@ -85,7 +85,7 @@ ID3D12DescriptorHeapPtr CppDirectXRayTracing05::D3D12GraphicsContext::createDesc
     return pHeap;
 }
 
-D3D12_CPU_DESCRIPTOR_HANDLE CppDirectXRayTracing05::D3D12GraphicsContext::createRTV(ID3D12Device5Ptr pDevice, ID3D12ResourcePtr pResource, ID3D12DescriptorHeapPtr pHeap, uint32_t& usedHeapEntries, DXGI_FORMAT format)
+D3D12_CPU_DESCRIPTOR_HANDLE CppDirectXRayTracing07::D3D12GraphicsContext::createRTV(ID3D12Device5Ptr pDevice, ID3D12ResourcePtr pResource, ID3D12DescriptorHeapPtr pHeap, uint32_t& usedHeapEntries, DXGI_FORMAT format)
 {
     D3D12_RENDER_TARGET_VIEW_DESC desc = {};
     desc.ViewDimension = D3D12_RTV_DIMENSION_TEXTURE2D;
@@ -98,7 +98,7 @@ D3D12_CPU_DESCRIPTOR_HANDLE CppDirectXRayTracing05::D3D12GraphicsContext::create
     return rtvHandle;
 }
 
-void CppDirectXRayTracing05::D3D12GraphicsContext::resourceBarrier(ID3D12GraphicsCommandList4Ptr pCmdList, ID3D12ResourcePtr pResource, D3D12_RESOURCE_STATES stateBefore, D3D12_RESOURCE_STATES stateAfter)
+void CppDirectXRayTracing07::D3D12GraphicsContext::resourceBarrier(ID3D12GraphicsCommandList4Ptr pCmdList, ID3D12ResourcePtr pResource, D3D12_RESOURCE_STATES stateBefore, D3D12_RESOURCE_STATES stateAfter)
 {
     D3D12_RESOURCE_BARRIER barrier = {};
     barrier.Type = D3D12_RESOURCE_BARRIER_TYPE_TRANSITION;
@@ -109,7 +109,7 @@ void CppDirectXRayTracing05::D3D12GraphicsContext::resourceBarrier(ID3D12Graphic
     pCmdList->ResourceBarrier(1, &barrier);
 }
 
-uint64_t CppDirectXRayTracing05::D3D12GraphicsContext::submitCommandList(ID3D12GraphicsCommandList4Ptr pCmdList, ID3D12CommandQueuePtr pCmdQueue, ID3D12FencePtr pFence, uint64_t fenceValue)
+uint64_t CppDirectXRayTracing07::D3D12GraphicsContext::submitCommandList(ID3D12GraphicsCommandList4Ptr pCmdList, ID3D12CommandQueuePtr pCmdQueue, ID3D12FencePtr pFence, uint64_t fenceValue)
 {
     pCmdList->Close();
     ID3D12CommandList* pGraphicsList = pCmdList.GetInterfacePtr();
