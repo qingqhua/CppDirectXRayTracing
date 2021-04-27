@@ -19,6 +19,8 @@ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "06-Raytrace", "Tutorials\06
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "07-BasicShaders", "Tutorials\07-BasicShaders\07-BasicShaders.vcxproj", "{17173440-1B36-4A67-B729-5069E5735052}"
 EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "14-Refit", "Tutorials\15-Primitive\15-Primitive.vcxproj", "{3BA75BE4-F314-4885-A4C2-A054758553FD}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|x64 = Debug|x64
@@ -57,6 +59,10 @@ Global
 		{17173440-1B36-4A67-B729-5069E5735052}.Debug|x64.Build.0 = Debug|x64
 		{17173440-1B36-4A67-B729-5069E5735052}.Release|x64.ActiveCfg = Release|x64
 		{17173440-1B36-4A67-B729-5069E5735052}.Release|x64.Build.0 = Release|x64
+		{3BA75BE4-F314-4885-A4C2-A054758553FD}.Debug|x64.ActiveCfg = Debug|x64
+		{3BA75BE4-F314-4885-A4C2-A054758553FD}.Debug|x64.Build.0 = Debug|x64
+		{3BA75BE4-F314-4885-A4C2-A054758553FD}.Release|x64.ActiveCfg = Release|x64
+		{3BA75BE4-F314-4885-A4C2-A054758553FD}.Release|x64.Build.0 = Release|x64
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
