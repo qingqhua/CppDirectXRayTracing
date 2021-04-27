@@ -3,9 +3,11 @@
 
 void CppDirectXRayTracing07::Application::InitDXR(HWND winHandle, uint32_t winWidth, uint32_t winHeight)
 {
-    mContext = D3D12GraphicsContext();
+    mContext = std::make_unique<D3D12GraphicsContext>();
+    mAccelerateStruct = std::make_unique<D3D12AccelerationStructures>();
+    mRtpipe = std::make_unique<D3D12RTPipeline>();
 
-    for (uint32_t i = 0; i < mContext.kDefaultSwapChainBuffers; i++)
+    for (uint32_t i = 0; i < mContext->kDefaultSwapChainBuffers; i++)
     {
         mFrameObjects.push_back(FrameObject());
     }
@@ -24,19 +26,19 @@ void CppDirectXRayTracing07::Application::InitDXR(HWND winHandle, uint32_t winWi
     // Create the DXGI factory
     IDXGIFactory4Ptr pDxgiFactory;
     d3d_call(CreateDXGIFactory1(IID_PPV_ARGS(&pDxgiFactory)));
-    mpDevice = mContext.createDevice(pDxgiFactory);
-    mpCmdQueue = mContext.createCommandQueue(mpDevice);
-    mpSwapChain = mContext.createDxgiSwapChain(pDxgiFactory, mHwnd, winWidth, winHeight, DXGI_FORMAT_R8G8B8A8_UNORM, mpCmdQueue);
+    mpDevice = mContext->createDevice(pDxgiFactory);
+    mpCmdQueue = mContext->createCommandQueue(mpDevice);
+    mpSwapChain = mContext->createDxgiSwapChain(pDxgiFactory, mHwnd, winWidth, winHeight, DXGI_FORMAT_R8G8B8A8_UNORM, mpCmdQueue);
 
     // Create a RTV descriptor heap
-    mRtvHeap.pHeap = mContext.createDescriptorHeap(mpDevice, kRtvHeapSize, D3D12_DESCRIPTOR_HEAP_TYPE_RTV, false);
+    mRtvHeap.pHeap = mContext->createDescriptorHeap(mpDevice, kRtvHeapSize, D3D12_DESCRIPTOR_HEAP_TYPE_RTV, false);
 
     // Create the per-frame objects
-    for (uint32_t i = 0; i < mContext.kDefaultSwapChainBuffers; i++)
+    for (uint32_t i = 0; i < mContext->kDefaultSwapChainBuffers; i++)
     {
         d3d_call(mpDevice->CreateCommandAllocator(D3D12_COMMAND_LIST_TYPE_DIRECT, IID_PPV_ARGS(&mFrameObjects[i].pCmdAllocator)));
         d3d_call(mpSwapChain->GetBuffer(i, IID_PPV_ARGS(&mFrameObjects[i].pSwapChainBuffer)));
-        mFrameObjects[i].rtvHandle = mContext.createRTV(mpDevice, mFrameObjects[i].pSwapChainBuffer, mRtvHeap.pHeap, mRtvHeap.usedEntries, DXGI_FORMAT_R8G8B8A8_UNORM_SRGB);
+        mFrameObjects[i].rtvHandle = mContext->createRTV(mpDevice, mFrameObjects[i].pSwapChainBuffer, mRtvHeap.pHeap, mRtvHeap.usedEntries, DXGI_FORMAT_R8G8B8A8_UNORM_SRGB);
     }
 
     // Create the command-list
@@ -49,14 +51,12 @@ void CppDirectXRayTracing07::Application::InitDXR(HWND winHandle, uint32_t winWi
 
 void CppDirectXRayTracing07::Application::CreateAccelerationStructures()
 {
-    mAccelerateStruct = D3D12AccelerationStructures();
-
-    mpVertexBuffer = mAccelerateStruct.createTriangleVB(mpDevice);
-    CppDirectXRayTracing07::AccelerationStructureBuffers bottomLevelBuffers = mAccelerateStruct.createBottomLevelAS(mpDevice, mpCmdList, mpVertexBuffer);
-    AccelerationStructureBuffers topLevelBuffers = mAccelerateStruct.createTopLevelAS(mpDevice, mpCmdList, bottomLevelBuffers.pResult, mTlasSize);
+    mpVertexBuffer = mAccelerateStruct->createTriangleVB(mpDevice);
+    CppDirectXRayTracing07::AccelerationStructureBuffers bottomLevelBuffers = mAccelerateStruct->createBottomLevelAS(mpDevice, mpCmdList, mpVertexBuffer);
+    AccelerationStructureBuffers topLevelBuffers = mAccelerateStruct->createTopLevelAS(mpDevice, mpCmdList, bottomLevelBuffers.pResult, mTlasSize);
 
     // The tutorial doesn't have any resource lifetime management, so we flush and sync here. This is not required by the DXR spec - you can submit the list whenever you like as long as you take care of the resources lifetime.
-    mFenceValue = mContext.submitCommandList(mpCmdList, mpCmdQueue, mpFence, mFenceValue);
+    mFenceValue = mContext->submitCommandList(mpCmdList, mpCmdQueue, mpFence, mFenceValue);
     mpFence->SetEventOnCompletion(mFenceValue, mFenceEvent);
     WaitForSingleObject(mFenceEvent, INFINITE);
     uint32_t bufferIndex = mpSwapChain->GetCurrentBackBufferIndex();
@@ -77,25 +77,23 @@ void CppDirectXRayTracing07::Application::CreateRtPipelineState()
     //  2 for shader config (shared between all programs. 1 for the config, 1 for association)
     //  1 for pipeline config
     //  1 for the global root signature
-
-    mRtpipe = D3D12RTPipeline();
     
     std::array<D3D12_STATE_SUBOBJECT, kNumSubobjects> subobjects;
     uint32_t index = 0;
 
     // Create the DXIL library
-    DxilLibrary dxilLib = mRtpipe.createDxilLibrary();
+    DxilLibrary dxilLib = mRtpipe->createDxilLibrary();
     subobjects[index++] = dxilLib.stateSubobject; // 0 Library
 
-    HitProgram hitProgram(nullptr, mRtpipe.kClosestHitShader, mRtpipe.kHitGroup);
+    HitProgram hitProgram(nullptr, mRtpipe->kClosestHitShader, mRtpipe->kHitGroup);
     subobjects[index++] = hitProgram.subObject; // 1 Hit Group
 
     // Create the ray-gen root-signature and association
-    LocalRootSignature rgsRootSignature(mpDevice, mRtpipe.createRayGenRootDesc().desc);
+    LocalRootSignature rgsRootSignature(mpDevice, mRtpipe->createRayGenRootDesc().desc);
     subobjects[index] = rgsRootSignature.subobject; // 2 RayGen Root Sig
 
     uint32_t rgsRootIndex = index++; // 2
-    ExportAssociation rgsRootAssociation(&mRtpipe.kRayGenShader, 1, &(subobjects[rgsRootIndex]));
+    ExportAssociation rgsRootAssociation(&mRtpipe->kRayGenShader, 1, &(subobjects[rgsRootIndex]));
     subobjects[index++] = rgsRootAssociation.subobject; // 3 Associate Root Sig to RGS
 
     // Create the miss- and hit-programs root-signature and association
@@ -105,21 +103,21 @@ void CppDirectXRayTracing07::Application::CreateRtPipelineState()
     subobjects[index] = hitMissRootSignature.subobject; // 4 Root Sig to be shared between Miss and CHS
 
     uint32_t hitMissRootIndex = index++; // 4
-    const WCHAR* missHitExportName[] = { mRtpipe.kMissShader, mRtpipe.kClosestHitShader };
+    const WCHAR* missHitExportName[] = { mRtpipe->kMissShader,mRtpipe->kClosestHitShader };
     ExportAssociation missHitRootAssociation(missHitExportName, arraysize(missHitExportName), &(subobjects[hitMissRootIndex]));
     subobjects[index++] = missHitRootAssociation.subobject; // 5 Associate Root Sig to Miss and CHS
 
     // Bind the payload size to the programs
-    ShaderConfig shaderConfig(sizeof(float) * 2, sizeof(float) * 1);
+    ShaderConfig shaderConfig(sizeof(float) * 2, sizeof(float) * 3);
     subobjects[index] = shaderConfig.subobject; // 6 Shader Config
 
     uint32_t shaderConfigIndex = index++; // 6
-    const WCHAR* shaderExports[] = { mRtpipe.kMissShader, mRtpipe.kClosestHitShader, mRtpipe.kRayGenShader };
+    const WCHAR* shaderExports[] = { mRtpipe->kMissShader, mRtpipe->kClosestHitShader, mRtpipe->kRayGenShader };
     ExportAssociation configAssociation(shaderExports, arraysize(shaderExports), &(subobjects[shaderConfigIndex]));
     subobjects[index++] = configAssociation.subobject; // 7 Associate Shader Config to Miss, CHS, RGS
 
     // Create the pipeline config
-    PipelineConfig config(0);
+    PipelineConfig config(kMaxTraceRecursionDepth);
     subobjects[index++] = config.subobject; // 8
 
     // Create the global root signature and store the empty signature
@@ -154,7 +152,7 @@ void CppDirectXRayTracing07::Application::CreateShaderTable()
     uint32_t shaderTableSize = mShaderTableEntrySize * 3;
 
     // For simplicity, we create the shader-table on the upload heap. You can also create it on the default heap
-    mpShaderTable = mAccelerateStruct.createBuffer(mpDevice, shaderTableSize, D3D12_RESOURCE_FLAG_NONE, D3D12_RESOURCE_STATE_GENERIC_READ, kUploadHeapProps);
+    mpShaderTable = mAccelerateStruct->createBuffer(mpDevice, shaderTableSize, D3D12_RESOURCE_FLAG_NONE, D3D12_RESOURCE_STATE_GENERIC_READ, kUploadHeapProps);
 
     // Map the buffer
     uint8_t* pData;
@@ -165,16 +163,16 @@ void CppDirectXRayTracing07::Application::CreateShaderTable()
     mpPipelineState->QueryInterface(IID_PPV_ARGS(&pRtsoProps));
 
     // Entry 0 - ray-gen program ID and descriptor data
-    memcpy(pData, pRtsoProps->GetShaderIdentifier(mRtpipe.kRayGenShader), D3D12_SHADER_IDENTIFIER_SIZE_IN_BYTES);
+    memcpy(pData, pRtsoProps->GetShaderIdentifier(mRtpipe->kRayGenShader), D3D12_SHADER_IDENTIFIER_SIZE_IN_BYTES);
     uint64_t heapStart = mpSrvUavHeap->GetGPUDescriptorHandleForHeapStart().ptr;
     *(uint64_t*)(pData + D3D12_SHADER_IDENTIFIER_SIZE_IN_BYTES) = heapStart;
 
     // Entry 1 - miss program
-    memcpy(pData + mShaderTableEntrySize, pRtsoProps->GetShaderIdentifier(mRtpipe.kMissShader), D3D12_SHADER_IDENTIFIER_SIZE_IN_BYTES);
+    memcpy(pData + mShaderTableEntrySize, pRtsoProps->GetShaderIdentifier(mRtpipe->kMissShader), D3D12_SHADER_IDENTIFIER_SIZE_IN_BYTES);
 
     // Entry 2 - hit program
     uint8_t* pHitEntry = pData + mShaderTableEntrySize * 2; // +2 skips the ray-gen and miss entries
-    memcpy(pHitEntry, pRtsoProps->GetShaderIdentifier(mRtpipe.kHitGroup), D3D12_SHADER_IDENTIFIER_SIZE_IN_BYTES);
+    memcpy(pHitEntry, pRtsoProps->GetShaderIdentifier(mRtpipe->kHitGroup), D3D12_SHADER_IDENTIFIER_SIZE_IN_BYTES);
 
     // Unmap
     mpShaderTable->Unmap(0, nullptr);
@@ -196,7 +194,7 @@ void CppDirectXRayTracing07::Application::createShaderResources()
     d3d_call(mpDevice->CreateCommittedResource(&kDefaultHeapProps, D3D12_HEAP_FLAG_NONE, &resDesc, D3D12_RESOURCE_STATE_COPY_SOURCE, nullptr, IID_PPV_ARGS(&mpOutputResource))); // Starting as copy-source to simplify onFrameRender()
 
     // Create an SRV/UAV descriptor heap. Need 2 entries - 1 SRV for the scene and 1 UAV for the output
-    mpSrvUavHeap = mContext.createDescriptorHeap(mpDevice, 2, D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV, true);
+    mpSrvUavHeap = mContext->createDescriptorHeap(mpDevice, 2, D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV, true);
 
     // Create the UAV. Based on the root signature we created it should be the first entry
     D3D12_UNORDERED_ACCESS_VIEW_DESC uavDesc = {};
@@ -223,17 +221,17 @@ uint32_t CppDirectXRayTracing07::Application::beginFrame()
 
 void CppDirectXRayTracing07::Application::endFrame(uint32_t rtvIndex)
 {
-    mContext.resourceBarrier(mpCmdList, mFrameObjects[rtvIndex].pSwapChainBuffer, D3D12_RESOURCE_STATE_RENDER_TARGET, D3D12_RESOURCE_STATE_PRESENT);
-    mFenceValue = mContext.submitCommandList(mpCmdList, mpCmdQueue, mpFence, mFenceValue);
+    mContext->resourceBarrier(mpCmdList, mFrameObjects[rtvIndex].pSwapChainBuffer, D3D12_RESOURCE_STATE_RENDER_TARGET, D3D12_RESOURCE_STATE_PRESENT);
+    mFenceValue = mContext->submitCommandList(mpCmdList, mpCmdQueue, mpFence, mFenceValue);
     mpSwapChain->Present(0, 0);
 
     // Prepare the command list for the next frame
     uint32_t bufferIndex = mpSwapChain->GetCurrentBackBufferIndex();
 
     // Make sure we have the new back-buffer is ready
-    if (mFenceValue > mContext.kDefaultSwapChainBuffers)
+    if (mFenceValue > mContext->kDefaultSwapChainBuffers)
     {
-        mpFence->SetEventOnCompletion(mFenceValue - mContext.kDefaultSwapChainBuffers + 1, mFenceEvent);
+        mpFence->SetEventOnCompletion(mFenceValue - mContext->kDefaultSwapChainBuffers + 1, mFenceEvent);
         WaitForSingleObject(mFenceEvent, INFINITE);
     }
 
@@ -259,7 +257,7 @@ void CppDirectXRayTracing07::Application::onFrameRender()
     uint32_t rtvIndex = beginFrame();
 
     // Let's raytrace
-    mContext.resourceBarrier(mpCmdList, mpOutputResource, D3D12_RESOURCE_STATE_COPY_SOURCE, D3D12_RESOURCE_STATE_UNORDERED_ACCESS);
+    mContext->resourceBarrier(mpCmdList, mpOutputResource, D3D12_RESOURCE_STATE_COPY_SOURCE, D3D12_RESOURCE_STATE_UNORDERED_ACCESS);
     D3D12_DISPATCH_RAYS_DESC raytraceDesc = {};
     raytraceDesc.Width = mSwapChainSize.x;
     raytraceDesc.Height = mSwapChainSize.y;
@@ -289,8 +287,8 @@ void CppDirectXRayTracing07::Application::onFrameRender()
     mpCmdList->DispatchRays(&raytraceDesc);
 
     // Copy the results to the back-buffer
-    mContext.resourceBarrier(mpCmdList, mpOutputResource, D3D12_RESOURCE_STATE_UNORDERED_ACCESS, D3D12_RESOURCE_STATE_COPY_SOURCE);
-    mContext.resourceBarrier(mpCmdList, mFrameObjects[rtvIndex].pSwapChainBuffer, D3D12_RESOURCE_STATE_PRESENT, D3D12_RESOURCE_STATE_COPY_DEST);
+    mContext->resourceBarrier(mpCmdList, mpOutputResource, D3D12_RESOURCE_STATE_UNORDERED_ACCESS, D3D12_RESOURCE_STATE_COPY_SOURCE);
+    mContext->resourceBarrier(mpCmdList, mFrameObjects[rtvIndex].pSwapChainBuffer, D3D12_RESOURCE_STATE_PRESENT, D3D12_RESOURCE_STATE_COPY_DEST);
     mpCmdList->CopyResource(mFrameObjects[rtvIndex].pSwapChainBuffer, mpOutputResource);
 
     endFrame(rtvIndex);

@@ -30,8 +30,9 @@ namespace CppDirectXRayTracing07 {
         static const uint32_t kRtvHeapSize = 3;
         static const uint32_t kSrvUavHeapSize = 2;
         static const uint32_t kNumSubobjects = 10;
+        static const uint32_t kMaxTraceRecursionDepth = 10;
 
-        D3D12GraphicsContext mContext;
+        std::unique_ptr<D3D12GraphicsContext> mContext;
         std::vector<FrameObject> mFrameObjects;
         HeapData mRtvHeap;
         HWND mHwnd = nullptr;
@@ -45,14 +46,14 @@ namespace CppDirectXRayTracing07 {
         uint64_t mFenceValue = 0;    
         
         // Acceleration Structure
-        D3D12AccelerationStructures mAccelerateStruct;
+        std::unique_ptr<D3D12AccelerationStructures> mAccelerateStruct;
         ID3D12ResourcePtr mpVertexBuffer;
         ID3D12ResourcePtr mpTopLevelAS;
         ID3D12ResourcePtr mpBottomLevelAS;
         uint64_t mTlasSize = 0;
 
         // Pipeline state
-        D3D12RTPipeline mRtpipe;
+        std::unique_ptr<D3D12RTPipeline> mRtpipe;
         ID3D12StateObjectPtr mpPipelineState;
         ID3D12RootSignaturePtr mpEmptyRootSig;
 

@@ -19,6 +19,7 @@ namespace CppDirectXRayTracing07
 		const WCHAR* kMissShader = L"miss";
 		const WCHAR* kClosestHitShader = L"chs";
 		const WCHAR* kHitGroup = L"HitGroup";
+		
 	};
 
 };

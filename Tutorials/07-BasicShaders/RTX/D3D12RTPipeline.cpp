@@ -61,7 +61,7 @@ ID3DBlobPtr CppDirectXRayTracing07::D3D12RTPipeline::compileLibrary(const WCHAR*
 CppDirectXRayTracing07::RootSignatureDesc CppDirectXRayTracing07::D3D12RTPipeline::createRayGenRootDesc()
 {
     // Create the root-signature
-    RootSignatureDesc desc;
+    CppDirectXRayTracing07::RootSignatureDesc desc;
     desc.range.resize(2);
     // gOutput
     desc.range[0].BaseShaderRegister = 0;
@@ -93,7 +93,7 @@ CppDirectXRayTracing07::RootSignatureDesc CppDirectXRayTracing07::D3D12RTPipelin
 CppDirectXRayTracing07::DxilLibrary CppDirectXRayTracing07::D3D12RTPipeline::createDxilLibrary()
 {
     // Compile the shader
-    ID3DBlobPtr pDxilLib = compileLibrary(kShaderName, L"lib_6_3");
+    ID3DBlobPtr pDxilLib = compileLibrary(L"Data/07-Shaders.hlsl", L"lib_6_3");
     const WCHAR* entryPoints[] = { kRayGenShader, kMissShader, kClosestHitShader };
     return DxilLibrary(pDxilLib, entryPoints, arraysize(entryPoints));
 }
