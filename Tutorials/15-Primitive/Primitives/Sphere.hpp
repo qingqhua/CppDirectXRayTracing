@@ -7,16 +7,16 @@ namespace Primitives
 	class Sphere
 	{
 	public:
-		Sphere() = delete;
-		Sphere(float diameter, int tessellation, bool uvHorizontalFlip = false, bool uvVerticalFlip = false);
+		Sphere() = default;
 		~Sphere() = default;
 
+		void Init(float diameter, int tessellation, bool uvHorizontalFlip = false, bool uvVerticalFlip = false);
 		std::vector <Vertex> GetVertices();
-		std::vector <uint32_t> GetIndices();
+		std::vector <uint16_t> GetIndices();
 	
 	private:
 		void CalculateTangentSpace();
-		std::vector<uint32_t> mIndices;
+		std::vector<uint16_t> mIndices;
 		std::vector <Vertex> mVertices;
 	};
 

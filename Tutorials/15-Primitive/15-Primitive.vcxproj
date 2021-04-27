@@ -11,7 +11,7 @@
     </ProjectConfiguration>
   </ItemGroup>
   <ItemGroup>
-    <FxCompile Include="Data\15-Shaders.hlsl">
+    <FxCompile Include="Data\Shaders.hlsl">
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</ExcludedFromBuild>
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">true</ExcludedFromBuild>
     </FxCompile>
@@ -23,6 +23,7 @@
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="15-Primitive.cpp" />
+    <ClCompile Include="Primitives\Cube.cpp" />
     <ClCompile Include="Primitives\Sphere.cpp" />
     <ClCompile Include="RTX\D3D12AccelerationStructures.cpp" />
     <ClCompile Include="RTX\D3D12GraphicsContext.cpp" />
@@ -30,6 +31,7 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="15-Primitive.hpp" />
+    <ClInclude Include="Primitives\Cube.hpp" />
     <ClInclude Include="Primitives\Sphere.hpp" />
     <ClInclude Include="Primitives\Vertex.hpp" />
     <ClInclude Include="RTX\D3D12AccelerationStructures.hpp" />

@@ -1,4 +1,4 @@
-static const float3 cameraPosition = float3(0, 0, -2);
+static const float3 cameraPosition = float3(0, 0, -4);
 static const float4 backgroundColor = float4(1.0, 0.6, 0.2, 1.0);
 
 RaytracingAccelerationStructure gRtScene : register(t0);

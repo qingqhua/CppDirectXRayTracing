@@ -30,7 +30,7 @@ namespace CppDirectXRayTracing15 {
         static const uint32_t kRtvHeapSize = 3;
         static const uint32_t kSrvUavHeapSize = 2;
         static const uint32_t kNumSubobjects = 10;
-        static const uint32_t kMaxTraceRecursionDepth = 10;
+        static const uint32_t kMaxTraceRecursionDepth = 1;
 
         std::unique_ptr<D3D12GraphicsContext> mContext;
         std::vector<FrameObject> mFrameObjects;

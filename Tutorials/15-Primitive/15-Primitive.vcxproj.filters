@@ -15,7 +15,7 @@
     </Filter>
   </ItemGroup>
   <ItemGroup>
-    <FxCompile Include="Data\15-Shaders.hlsl">
+    <FxCompile Include="Data\Shaders.hlsl">
       <Filter>Data</Filter>
     </FxCompile>
   </ItemGroup>
@@ -31,6 +31,9 @@
     </ClCompile>
     <ClCompile Include="15-Primitive.cpp" />
     <ClCompile Include="Primitives\Sphere.cpp">
+      <Filter>Primitives</Filter>
+    </ClCompile>
+    <ClCompile Include="Primitives\Cube.cpp">
       <Filter>Primitives</Filter>
     </ClCompile>
   </ItemGroup>
@@ -76,6 +79,9 @@
       <Filter>Primitives</Filter>
     </ClInclude>
     <ClInclude Include="Primitives\Vertex.hpp">
+      <Filter>Primitives</Filter>
+    </ClInclude>
+    <ClInclude Include="Primitives\Cube.hpp">
       <Filter>Primitives</Filter>
     </ClInclude>
   </ItemGroup>

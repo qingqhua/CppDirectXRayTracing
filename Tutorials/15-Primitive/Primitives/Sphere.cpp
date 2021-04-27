@@ -3,7 +3,7 @@
 #include <stdexcept>
 #include <Externals/GLM/glm/gtc/constants.hpp>
 
-Primitives::Sphere::Sphere(float diameter, int tessellation, bool uvHorizontalFlip, bool uvVerticalFlip)
+void Primitives::Sphere::Init(float diameter, int tessellation, bool uvHorizontalFlip, bool uvVerticalFlip)
 {
     if (tessellation < 3)
     {
@@ -138,13 +138,13 @@ Primitives::Sphere::Sphere(float diameter, int tessellation, bool uvHorizontalFl
     for (int i = 0; i < horizontalSegments; i++)
     {
         // this.AddIndex(this.VerticesCount - 1 - i);
-        mIndices.push_back(static_cast<uint32_t>(mVertices.size() - 1 - i));
+        mIndices.push_back(static_cast<uint16_t>(mVertices.size() - 1 - i));
 
         // this.AddIndex(this.VerticesCount - horizontalSegments - 2 - i);
-        mIndices.push_back(static_cast<uint32_t>(mVertices.size() - horizontalSegments - 2 - i));
+        mIndices.push_back(static_cast<uint16_t>(mVertices.size() - horizontalSegments - 2 - i));
 
         // this.AddIndex(this.VerticesCount - horizontalSegments - 1 - i);
-        mIndices.push_back(static_cast<uint32_t>(mVertices.size() - horizontalSegments - 1 - i));
+        mIndices.push_back(static_cast<uint16_t>(mVertices.size() - horizontalSegments - 1 - i));
     }
 
     CalculateTangentSpace();
@@ -155,7 +155,7 @@ std::vector<Primitives::Vertex> Primitives::Sphere::GetVertices()
     return mVertices;
 }
 
-std::vector<uint32_t> Primitives::Sphere::GetIndices()
+std::vector<uint16_t> Primitives::Sphere::GetIndices()
 {
     return mIndices;
 }
@@ -177,9 +177,9 @@ void Primitives::Sphere::CalculateTangentSpace()
 
     for (int a = 0; a < triangleCount; a++)
     {
-        uint32_t i1 = mIndices[(a * 3) + 0];
-        uint32_t i2 = mIndices[(a * 3) + 1];
-        uint32_t i3 = mIndices[(a * 3) + 2];
+        uint16_t i1 = mIndices[(a * 3) + 0];
+        uint16_t i2 = mIndices[(a * 3) + 1];
+        uint16_t i3 = mIndices[(a * 3) + 2];
 
         a1 = mVertices[i1];
         a2 = mVertices[i2];

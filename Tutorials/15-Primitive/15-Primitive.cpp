@@ -51,12 +51,19 @@ void CppDirectXRayTracing15::Application::InitDXR(HWND winHandle, uint32_t winWi
 
 void CppDirectXRayTracing15::Application::CreateAccelerationStructures()
 {
-    size_t vertexCount = 0;
-    size_t indexCount = 0;
+    int vertexCount = 0;
+    int indexCount = 0;
+
     // Create primitive vertex buffer and index buffer.
-    mAccelerateStruct->CreatePrimitiveVBIB(mpDevice,mpVertexBuffer, vertexCount, mpIndexBuffer,indexCount);
+    mpVertexBuffer = mAccelerateStruct->CreatePrimitiveVB(mpDevice, vertexCount);
+    mpIndexBuffer = mAccelerateStruct->CreatePrimitiveIB(mpDevice, indexCount);
+
+    //mpVertexBuffer = mAccelerateStruct->createCubeVB(mpDevice, vertexCount);
+    //mpIndexBuffer = mAccelerateStruct->createCubeIB(mpDevice, indexCount);
+
+
     // Bind primitive vertex buffer and index buffer to BLAS.
-    CppDirectXRayTracing15::AccelerationStructureBuffers bottomLevelBuffers = mAccelerateStruct->createBottomLevelAS(mpDevice, mpCmdList, mpVertexBuffer, static_cast<int>(vertexCount),mpIndexBuffer,static_cast<int>(indexCount));
+    CppDirectXRayTracing15::AccelerationStructureBuffers bottomLevelBuffers = mAccelerateStruct->createBottomLevelAS(mpDevice, mpCmdList, mpVertexBuffer, mpIndexBuffer,vertexCount,indexCount);
 
     AccelerationStructureBuffers topLevelBuffers = mAccelerateStruct->createTopLevelAS(mpDevice, mpCmdList, bottomLevelBuffers.pResult, mTlasSize);
 

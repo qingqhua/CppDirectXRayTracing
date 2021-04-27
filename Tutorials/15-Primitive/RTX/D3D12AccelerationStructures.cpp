@@ -1,5 +1,7 @@
 #pragma once
 #include "D3D12AccelerationStructures.hpp"
+#include <iostream>
+
 
 ID3D12ResourcePtr CppDirectXRayTracing15::D3D12AccelerationStructures::createBuffer(ID3D12Device5Ptr pDevice, uint64_t size, D3D12_RESOURCE_FLAGS flags, D3D12_RESOURCE_STATES initState, const D3D12_HEAP_PROPERTIES& heapProps)
 {
@@ -21,14 +23,21 @@ ID3D12ResourcePtr CppDirectXRayTracing15::D3D12AccelerationStructures::createBuf
     return pBuffer;
 }
 
-ID3D12ResourcePtr CppDirectXRayTracing15::D3D12AccelerationStructures::createTriangleVB(ID3D12Device5Ptr pDevice)
+ID3D12ResourcePtr CppDirectXRayTracing15::D3D12AccelerationStructures::createCubeVB(ID3D12Device5Ptr pDevice, int& vertexCount)
 {
-    const vec3 vertices[] =
+    vec3 vertices[] =
     {
-        vec3(0,          1,  0),
-        vec3(0.866f,  -0.5f, 0),
-        vec3(-0.866f, -0.5f, 0),
+        vec3(-1.000000, 1.000000, -1.000000),
+        vec3(1.000000, 1.000000, -1.000000),
+        vec3(-1.000000, -1.000000, -1.000000),
+
+        vec3(1.000000, -1.000000, -1.000000),
+        vec3(-1.000000, 1.000000, 1.0),
+        vec3(0.999999, 1.000000, 1.000001),
+        vec3(-1.000000, -1.000000, 1.000000),
+        vec3(1.000000, -1.000000, 1.000000)
     };
+    vertexCount = sizeof(vertices) / sizeof(vertices[0]);
 
     // For simplicity, we create the vertex buffer on the upload heap, but that's not required
     ID3D12ResourcePtr pBuffer = createBuffer(pDevice, sizeof(vertices), D3D12_RESOURCE_FLAG_NONE, D3D12_RESOURCE_STATE_GENERIC_READ, kUploadHeapProps);
@@ -39,42 +48,74 @@ ID3D12ResourcePtr CppDirectXRayTracing15::D3D12AccelerationStructures::createTri
     return pBuffer;
 }
 
-void CppDirectXRayTracing15::D3D12AccelerationStructures::CreatePrimitiveVBIB(ID3D12Device5Ptr pDevice, ID3D12ResourcePtr& vBuffer, size_t& vertexCount, ID3D12ResourcePtr& iBuffer, size_t& indexCount)
+ID3D12ResourcePtr CppDirectXRayTracing15::D3D12AccelerationStructures::createCubeIB(ID3D12Device5Ptr pDevice, int& indexCount)
 {
-    auto& sphere = Primitives::Sphere(2.0f, 32);
-    uint32_t* indices = &sphere.GetIndices()[0];
-    Primitives::Vertex* vertices = &sphere.GetVertices()[0];
+    uint16 indices[] =
+    {
+    0, 1, 2,    // side 1
+    2, 1, 3,
+    4, 0, 6,    // side 2
+    6, 0, 2,
+    7, 5, 6,    // side 3
+    6, 5, 4,
+    3, 1, 7,    // side 4
+    7, 1, 5,
+    4, 5, 0,    // side 5
+    0, 5, 1,
+    3, 7, 2,    // side 6
+    2, 7, 6
+    };
+    indexCount = sizeof(indices) / sizeof(indices[0]);
 
-    // Vertex buffer
-    vertexCount = sphere.GetVertices().size();
-    vBuffer = createBuffer(pDevice, (sizeof(Primitives::Vertex) * vertexCount), D3D12_RESOURCE_FLAG_NONE, D3D12_RESOURCE_STATE_GENERIC_READ, kUploadHeapProps);
-    uint8_t* vData;
-    vBuffer->Map(0, nullptr, (void**)&vData);
-    memcpy(vData, vertices, sizeof(vertices));
-    vBuffer->Unmap(0, nullptr);
-
-    // Index buffer
-    indexCount = sphere.GetIndices().size();
-    iBuffer = createBuffer(pDevice, (sizeof(uint32_t) * indexCount), D3D12_RESOURCE_FLAG_NONE, D3D12_RESOURCE_STATE_GENERIC_READ, kUploadHeapProps);
-    uint8_t* iData;
-    iBuffer->Map(0, nullptr, (void**)&iData);
-    memcpy(iData, indices, sizeof(indices));
-    iBuffer->Unmap(0, nullptr);
+    ID3D12ResourcePtr pBuffer = createBuffer(pDevice, sizeof(uint16) * indexCount, D3D12_RESOURCE_FLAG_NONE, D3D12_RESOURCE_STATE_GENERIC_READ, kUploadHeapProps);
+    uint8_t* pData;
+    pBuffer->Map(0, nullptr, (void**)&pData);
+    memcpy(pData, indices, sizeof(uint16) * indexCount);
+    pBuffer->Unmap(0, nullptr);
+    return pBuffer;
 }
 
-CppDirectXRayTracing15::AccelerationStructureBuffers CppDirectXRayTracing15::D3D12AccelerationStructures::createBottomLevelAS(ID3D12Device5Ptr pDevice, ID3D12GraphicsCommandList4Ptr pCmdList, ID3D12ResourcePtr pVB, int vertexCount, ID3D12ResourcePtr pIB, int indexCount)
+ID3D12ResourcePtr CppDirectXRayTracing15::D3D12AccelerationStructures::CreatePrimitiveVB(ID3D12Device5Ptr pDevice, int& vertexCount)
+{
+    // Vertex buffer
+    vertexCount = static_cast<int>(mPrimitive.GetVertices().size());
+
+    ID3D12ResourcePtr vBuffer = createBuffer(pDevice, sizeof(Primitives::Vertex) * vertexCount, D3D12_RESOURCE_FLAG_NONE, D3D12_RESOURCE_STATE_GENERIC_READ, kUploadHeapProps);
+    uint8_t* vData;
+    vBuffer->Map(0, nullptr, (void**)&vData);
+    memcpy(vData, &mPrimitive.GetVertices().data()[0], sizeof(Primitives::Vertex)* vertexCount);
+    vBuffer->Unmap(0, nullptr);
+
+    return vBuffer;
+}
+
+ID3D12ResourcePtr CppDirectXRayTracing15::D3D12AccelerationStructures::CreatePrimitiveIB(ID3D12Device5Ptr pDevice, int& indexCount)
+{
+    indexCount = static_cast<int>(mPrimitive.GetIndices().size());
+
+    ID3D12ResourcePtr iBuffer = createBuffer(pDevice, sizeof(uint16_t) * indexCount, D3D12_RESOURCE_FLAG_NONE, D3D12_RESOURCE_STATE_GENERIC_READ, kUploadHeapProps);
+    uint8_t* iData;
+    iBuffer->Map(0, nullptr, (void**)&iData);
+    memcpy(iData, &mPrimitive.GetIndices().data()[0], sizeof(uint16_t)* indexCount);
+    iBuffer->Unmap(0, nullptr);
+
+    return iBuffer;
+}
+
+CppDirectXRayTracing15::AccelerationStructureBuffers CppDirectXRayTracing15::D3D12AccelerationStructures::createBottomLevelAS(ID3D12Device5Ptr pDevice, ID3D12GraphicsCommandList4Ptr pCmdList, ID3D12ResourcePtr vBuffer, ID3D12ResourcePtr iBuffer, int vertexCount, int indexCount)
 {
     D3D12_RAYTRACING_GEOMETRY_DESC geomDesc = {};
     geomDesc.Type = D3D12_RAYTRACING_GEOMETRY_TYPE_TRIANGLES;
-    geomDesc.Triangles.VertexBuffer.StartAddress = pVB->GetGPUVirtualAddress();
-    geomDesc.Triangles.VertexBuffer.StrideInBytes = sizeof(Primitives::Vertex);
+    geomDesc.Triangles.VertexBuffer.StartAddress = vBuffer->GetGPUVirtualAddress();
+    geomDesc.Triangles.VertexBuffer.StrideInBytes = sizeof(Primitives::Vertex); // change to vec3 if use hand-made cube buffer
     geomDesc.Triangles.VertexFormat = DXGI_FORMAT_R32G32B32_FLOAT;
     geomDesc.Triangles.VertexCount = vertexCount;
-    geomDesc.Triangles.IndexBuffer = pIB->GetGPUVirtualAddress();
+    geomDesc.Triangles.IndexBuffer = iBuffer->GetGPUVirtualAddress();
     geomDesc.Triangles.IndexCount = indexCount;
-    geomDesc.Triangles.IndexFormat = DXGI_FORMAT_R32_FLOAT;
-    geomDesc.Flags = D3D12_RAYTRACING_GEOMETRY_FLAG_OPAQUE;
+    geomDesc.Triangles.IndexFormat = DXGI_FORMAT_R16_UINT;
 
+    geomDesc.Flags = D3D12_RAYTRACING_GEOMETRY_FLAG_OPAQUE;
+    
     // Get the size requirements for the scratch and AS buffers
     D3D12_BUILD_RAYTRACING_ACCELERATION_STRUCTURE_INPUTS inputs = {};
     inputs.DescsLayout = D3D12_ELEMENTS_LAYOUT_ARRAY;
