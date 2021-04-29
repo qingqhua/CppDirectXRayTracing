@@ -11,7 +11,7 @@ namespace CppDirectXRayTracing16
 	public:
 		D3D12AccelerationStructures()
 		{
-			mPrimitive.Init(2.0f,32);
+			mPrimitive.Init(2.0f,64);
 		};
 
 		~D3D12AccelerationStructures() = default;

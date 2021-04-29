@@ -6,10 +6,10 @@
 static const float3 cameraPosition = float3(0, 0, -5);
 static const float4 backgroundColor = float4(1.0, 0.6, 0.2, 1.0);
 static const float4 lightAmbientColor = float4(0.2, 0.2, 0.2, 1.0);
-static const float3 lightPosition = float3(2.0, 2.0, -2.0);
-static const float4 lightDiffuseColor = float4(0.7, 0.2, 0.2, 1.0);
+static const float3 lightPosition = float3(2.0, 2.0, -4.0);
+static const float4 lightDiffuseColor = float4(0.2, 1.0, 0.2, 1.0);
 static const float4 lightSpecularColor = float4(1, 1, 1, 1);
-static const float4 primitiveAlbedo = float4(1.0, 0.8, 0.5, 1.0);
+static const float4 primitiveAlbedo = float4(0.1, 0.7, 0.6, 1.0);
 static const float diffuseCoef = 0.9;
 static const float specularCoef = 0.7;
 static const float specularPower = 50;
