@@ -1,8 +1,6 @@
 #pragma once
 #include "Cube.hpp"
-
 #include <Externals/GLM/glm/gtc/constants.hpp>
-
 
 void Primitives::Cube::Init(float size, bool uvHorizontalFlip, bool uvVerticalFlip, float uTileFactor, float vTileFactor)
 {
@@ -105,6 +103,15 @@ void Primitives::Cube::Init(float size, bool uvHorizontalFlip, bool uvVerticalFl
     }
 
     CalculateTangentSpace();
+}
+
+void Primitives::Cube::Transform(glm::mat4 transform)
+{
+    for (int i=0;i<mVertices.size();i++)
+    {
+        glm::vec4 res = transform * glm::vec4(mVertices[i].position, 1.0f);
+        mVertices[i].position = glm::vec3(res.x, res.y, res.z);
+    }
 }
 
 std::vector<Primitives::Vertex> Primitives::Cube::GetVertices()

@@ -19,6 +19,8 @@ namespace CppDirectXRayTracing17
 		const WCHAR* kRayGenShader = L"rayGen";
 		const WCHAR* kMissShader = L"miss";
 		const WCHAR* kClosestHitShader = L"chs";
+		const WCHAR* kShadowMiss = L"shadowMiss";
+		
 		const WCHAR* kHitGroup = L"HitGroup";
 		
 	};

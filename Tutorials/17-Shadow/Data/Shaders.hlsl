@@ -122,7 +122,13 @@ StructuredBuffer<Vertex> Vertices : register(t2);
 
 struct RayPayload
 {
-    float4 color;
+	float4 color;
+	uint recursionDepth;
+};
+
+struct ShadowPayload
+{
+	bool hit;
 };
 
 [shader("raygeneration")]
@@ -197,4 +203,10 @@ void chs(inout RayPayload payload, in BuiltInTriangleIntersectionAttributes attr
     // Calculate final color.
     float4 phongColor = CalculatePhongLighting(primitiveAlbedo, hitNormal, diffuseCoef, specularCoef, specularPower);
     payload.color = phongColor;
+}
+
+[shader("miss")]
+void shadowMiss(inout ShadowPayload payload)
+{
+	payload.hit = false;
 }

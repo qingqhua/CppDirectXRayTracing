@@ -18,6 +18,7 @@
   <ItemGroup>
     <ClInclude Include="17-Shadow.hpp" />
     <ClInclude Include="Primitives\Cube.hpp" />
+    <ClInclude Include="Primitives\Quad.hpp" />
     <ClInclude Include="Primitives\Sphere.hpp" />
     <ClInclude Include="Primitives\Vertex.hpp" />
     <ClInclude Include="RTX\D3D12AccelerationStructures.hpp" />
@@ -36,6 +37,7 @@
   <ItemGroup>
     <ClCompile Include="17-Shadow.cpp" />
     <ClCompile Include="Primitives\Cube.cpp" />
+    <ClCompile Include="Primitives\Quad.cpp" />
     <ClCompile Include="Primitives\Sphere.cpp" />
     <ClCompile Include="RTX\D3D12AccelerationStructures.cpp" />
     <ClCompile Include="RTX\D3D12GraphicsContext.cpp" />

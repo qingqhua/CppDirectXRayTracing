@@ -2,7 +2,6 @@
 #include "D3D12AccelerationStructures.hpp"
 #include <iostream>
 
-
 ID3D12ResourcePtr CppDirectXRayTracing17::D3D12AccelerationStructures::createBuffer(ID3D12Device5Ptr pDevice, uint64_t size, D3D12_RESOURCE_FLAGS flags, D3D12_RESOURCE_STATES initState, const D3D12_HEAP_PROPERTIES& heapProps)
 {
     D3D12_RESOURCE_DESC bufDesc = {};
@@ -23,6 +22,12 @@ ID3D12ResourcePtr CppDirectXRayTracing17::D3D12AccelerationStructures::createBuf
     return pBuffer;
 }
 
+void CppDirectXRayTracing17::D3D12AccelerationStructures::CreateSceneVBIB(ID3D12Device5Ptr pDevice)
+{
+    mIndexBuffer = CreateSceneIB(pDevice);
+    mVertexBuffer = CreateSceneVB(pDevice);
+}
+
 ID3D12ResourcePtr CppDirectXRayTracing17::D3D12AccelerationStructures::createCubeVB(ID3D12Device5Ptr pDevice)
 {
     // Vertex buffer
@@ -34,8 +39,8 @@ ID3D12ResourcePtr CppDirectXRayTracing17::D3D12AccelerationStructures::createCub
     memcpy(vData, &mCube.GetVertices().data()[0], sizeof(Primitives::Vertex) * vertexCount);
     vBuffer->Unmap(0, nullptr);
 
-    mVertexBuffer.push_back(vBuffer);
-    mVertexCount.push_back(vertexCount);
+    //mVertexBuffer.push_back(vBuffer);
+    //mVertexCount.push_back(vertexCount);
     return vBuffer;
 }
 
@@ -49,8 +54,8 @@ ID3D12ResourcePtr CppDirectXRayTracing17::D3D12AccelerationStructures::createCub
     memcpy(iData, &mCube.GetIndices().data()[0], sizeof(uint16_t) * indexCount);
     iBuffer->Unmap(0, nullptr);
 
-    mIndexBuffer.push_back(iBuffer);
-    mIndexCount.push_back(indexCount);
+    //mIndexBuffer.push_back(iBuffer);
+    //mIndexCount.push_back(indexCount);
     return iBuffer;
 }
 
@@ -64,8 +69,8 @@ ID3D12ResourcePtr CppDirectXRayTracing17::D3D12AccelerationStructures::CreateSph
     memcpy(vData, &mSphere.GetVertices().data()[0], sizeof(Primitives::Vertex)* vertexCount);
     vBuffer->Unmap(0, nullptr);
 
-    mVertexBuffer.push_back(vBuffer);
-    mVertexCount.push_back(vertexCount);
+    //mVertexBuffer.push_back(vBuffer);
+    //mVertexCount.push_back(vertexCount);
     return vBuffer;
 }
 
@@ -79,9 +84,62 @@ ID3D12ResourcePtr CppDirectXRayTracing17::D3D12AccelerationStructures::CreateSph
     memcpy(iData, &mSphere.GetIndices().data()[0], sizeof(uint16_t)* indexCount);
     iBuffer->Unmap(0, nullptr);
 
-    mIndexBuffer.push_back(iBuffer);
-    mIndexCount.push_back(indexCount);
+    //mIndexBuffer.push_back(iBuffer);
+    //mIndexCount.push_back(indexCount);
     return iBuffer;
+}
+
+ID3D12ResourcePtr CppDirectXRayTracing17::D3D12AccelerationStructures::CreateSceneVB(ID3D12Device5Ptr pDevice)
+{
+    // Vertex buffer
+    int vertexCount = static_cast<int>(mSceneVertices.size());
+    ID3D12ResourcePtr vBuffer = createBuffer(pDevice, sizeof(Primitives::Vertex) * vertexCount, D3D12_RESOURCE_FLAG_NONE, D3D12_RESOURCE_STATE_GENERIC_READ, kUploadHeapProps);
+    uint8_t* vData;
+    vBuffer->Map(0, nullptr, (void**)&vData);
+    memcpy(vData, &mSceneVertices.data()[0], sizeof(Primitives::Vertex) * vertexCount);
+    vBuffer->Unmap(0, nullptr);
+
+    return vBuffer;
+}
+
+ID3D12ResourcePtr CppDirectXRayTracing17::D3D12AccelerationStructures::CreateSceneIB(ID3D12Device5Ptr pDevice)
+{
+    int indexCount = static_cast<int>(mSceneIndices.size());
+
+    ID3D12ResourcePtr iBuffer = createBuffer(pDevice, sizeof(uint16_t) * indexCount, D3D12_RESOURCE_FLAG_NONE, D3D12_RESOURCE_STATE_GENERIC_READ, kUploadHeapProps);
+    uint8_t* iData;
+    iBuffer->Map(0, nullptr, (void**)&iData);
+    memcpy(iData, &mSceneIndices.data()[0], sizeof(uint16_t) * indexCount);
+    iBuffer->Unmap(0, nullptr);
+
+    return iBuffer;
+}
+
+void CppDirectXRayTracing17::D3D12AccelerationStructures::CreateScenePrimitives()
+{
+    mCube.Init(10.5f);
+    mSphere.Init(2.0f, 32);
+
+    // Transform the cube
+    glm::mat4 t = glm::translate(glm::mat4(1.0), glm::vec3(-2.0f,-6.0f,-2.0f));
+    mCube.Transform(t);
+    // Copy cube vertex& indice into scene.
+    mSceneVertices = mCube.GetVertices();
+    mSceneIndices  = mCube.GetIndices();
+
+    // Insert sphere vertex& indice into scene.
+    auto& vsphere = mSphere.GetVertices();
+    auto& isphere = mSphere.GetIndices();
+
+    uint16_t offset = static_cast<uint16_t>(mSceneVertices.size());
+
+    for (auto i : isphere)
+    {
+        mSceneIndices.push_back(i + offset);
+    }
+    mSceneVertices.insert(std::end(mSceneVertices), std::begin(vsphere), std::end(vsphere));
+
+    offset = static_cast<uint16_t>(mSceneVertices.size());
 }
 
 CppDirectXRayTracing17::AccelerationStructureBuffers CppDirectXRayTracing17::D3D12AccelerationStructures::createBottomLevelAS(ID3D12Device5Ptr pDevice, ID3D12GraphicsCommandList4Ptr pCmdList, ID3D12ResourcePtr vBuffer, ID3D12ResourcePtr iBuffer, int vertexCount, int indexCount)
@@ -131,7 +189,7 @@ CppDirectXRayTracing17::AccelerationStructureBuffers CppDirectXRayTracing17::D3D
     return buffers;
 }
 
-CppDirectXRayTracing17::AccelerationStructureBuffers CppDirectXRayTracing17::D3D12AccelerationStructures::createTopLevelAS(ID3D12Device5Ptr pDevice, ID3D12GraphicsCommandList4Ptr pCmdList, ID3D12ResourcePtr pBottomLevelAS[kDefaultNumDesc], uint64_t& tlasSize)
+CppDirectXRayTracing17::AccelerationStructureBuffers CppDirectXRayTracing17::D3D12AccelerationStructures::createTopLevelAS(ID3D12Device5Ptr pDevice, ID3D12GraphicsCommandList4Ptr pCmdList, ID3D12ResourcePtr pBottomLevelAS[], uint64_t& tlasSize)
 {
     // First, get the size of the TLAS buffers and create them
     D3D12_BUILD_RAYTRACING_ACCELERATION_STRUCTURE_INPUTS inputs = {};
@@ -163,11 +221,12 @@ CppDirectXRayTracing17::AccelerationStructureBuffers CppDirectXRayTracing17::D3D
     pInstanceDesc[0].InstanceID = 0;
     pInstanceDesc[0].InstanceContributionToHitGroupIndex = 0;
     pInstanceDesc[0].Flags = D3D12_RAYTRACING_INSTANCE_FLAG_NONE;
-    memcpy(pInstanceDesc[0].Transform, &transformation[0], sizeof(pInstanceDesc[0].Transform));
+    mat4 m = transpose(transformation[1]);
+    memcpy(pInstanceDesc[0].Transform, &m, sizeof(pInstanceDesc[0].Transform));
     pInstanceDesc[0].AccelerationStructure = pBottomLevelAS[0]->GetGPUVirtualAddress();
     pInstanceDesc[0].InstanceMask = 0xFF;
 
-    // Initialize the instance desc.
+    /*// Initialize the instance desc.
     for (int i = 1; i < kDefaultNumDesc; i++)
     {
         pInstanceDesc[i].InstanceID = i;                            // This value will be exposed to the shader via InstanceID()
@@ -178,7 +237,7 @@ CppDirectXRayTracing17::AccelerationStructureBuffers CppDirectXRayTracing17::D3D
         pInstanceDesc[i].AccelerationStructure = pBottomLevelAS[i]->GetGPUVirtualAddress();
         pInstanceDesc[i].InstanceMask = 0xFF;
     }
-    
+    */
     // Unmap
     buffers.pInstanceDesc->Unmap(0, nullptr);
 
@@ -200,22 +259,22 @@ CppDirectXRayTracing17::AccelerationStructureBuffers CppDirectXRayTracing17::D3D
     return buffers;
 }
 
-std::vector<int> CppDirectXRayTracing17::D3D12AccelerationStructures::GetVertexCount()
+int CppDirectXRayTracing17::D3D12AccelerationStructures::GetVertexCount()
 {
-    return mVertexCount;
+    return static_cast<int>(mSceneVertices.size());
 }
 
-std::vector<int> CppDirectXRayTracing17::D3D12AccelerationStructures::GetIndexCount()
+int CppDirectXRayTracing17::D3D12AccelerationStructures::GetIndexCount()
 {
-    return mIndexCount;
+    return static_cast<int>(mSceneIndices.size());
 }
 
-std::vector<ID3D12ResourcePtr> CppDirectXRayTracing17::D3D12AccelerationStructures::GetIndexBuffer()
+ID3D12ResourcePtr CppDirectXRayTracing17::D3D12AccelerationStructures::GetIndexBuffer()
 {
     return mIndexBuffer;
 }
 
-std::vector<ID3D12ResourcePtr> CppDirectXRayTracing17::D3D12AccelerationStructures::GetVertexBuffer()
+ID3D12ResourcePtr CppDirectXRayTracing17::D3D12AccelerationStructures::GetVertexBuffer()
 {
     return mVertexBuffer;
 }

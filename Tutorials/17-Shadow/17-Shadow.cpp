@@ -52,7 +52,7 @@ void CppDirectXRayTracing17::Application::InitDXR(HWND winHandle, uint32_t winWi
 void CppDirectXRayTracing17::Application::CreateAccelerationStructures()
 {
     // Bind primitive vertex buffer and index buffer to BLAS. 
-    auto& vBufferSphere = mAccelerateStruct->CreateSphereVB(mpDevice);
+    /*auto& vBufferSphere = mAccelerateStruct->CreateSphereVB(mpDevice);
     auto& iBufferSphere = mAccelerateStruct->CreateSphereIB(mpDevice);
     mBottomLevelBuffers[0]= mAccelerateStruct->createBottomLevelAS(mpDevice, mpCmdList, vBufferSphere, iBufferSphere, mAccelerateStruct->GetVertexCount()[0], mAccelerateStruct->GetIndexCount()[0]);
 
@@ -62,6 +62,12 @@ void CppDirectXRayTracing17::Application::CreateAccelerationStructures()
 
     mpBottomLevelAS[0] = mBottomLevelBuffers[0].pResult;
     mpBottomLevelAS[1] = mBottomLevelBuffers[1].pResult;
+    */
+
+    mAccelerateStruct->CreateSceneVBIB(mpDevice);
+    mBottomLevelBuffers = mAccelerateStruct->createBottomLevelAS(mpDevice, mpCmdList, mAccelerateStruct->GetVertexBuffer(), mAccelerateStruct->GetIndexBuffer(), mAccelerateStruct->GetVertexCount(), mAccelerateStruct->GetIndexCount());
+    mpBottomLevelAS[0] = mBottomLevelBuffers.pResult;
+
     AccelerationStructureBuffers topLevelBuffers = mAccelerateStruct->createTopLevelAS(mpDevice, mpCmdList, mpBottomLevelAS, mTlasSize);
     
     // The tutorial doesn't have any resource lifetime management, so we flush and sync here. This is not required by the DXR spec - you can submit the list whenever you like as long as you take care of the resources lifetime.
@@ -123,15 +129,17 @@ void CppDirectXRayTracing17::Application::CreateRtPipelineState()
     subobjects[index] = missRootSignature.subobject; // 6 Miss Root Sig
 
     int missRootIndex = index++;  // 6
-    ExportAssociation missRootAssociation(&mRtpipe->kMissShader, 1, &(subobjects[missRootIndex]));
+    const WCHAR* missRootExport[] = { mRtpipe->kMissShader, mRtpipe->kShadowMiss };
+    ExportAssociation missRootAssociation(missRootExport, arraysize(missRootExport), &(subobjects[missRootIndex]));
+    //ExportAssociation missRootAssociation(&mRtpipe->kMissShader, 1, &(subobjects[missRootIndex]));
     subobjects[index++] = missRootAssociation.subobject; // 7 Associate Miss Root Sig to Miss Shader
 
     // Bind the payload size to the programs
-    ShaderConfig shaderConfig(sizeof(float) * 2, sizeof(float) * 4);
+    ShaderConfig shaderConfig(sizeof(float) * 2, sizeof(float) * 5);
     subobjects[index] = shaderConfig.subobject; // 8 Shader Config
 
     uint32_t shaderConfigIndex = index++; // 8
-    const WCHAR* shaderExports[] = { mRtpipe->kMissShader, mRtpipe->kClosestHitShader, mRtpipe->kRayGenShader };
+    const WCHAR* shaderExports[] = { mRtpipe->kMissShader, mRtpipe->kClosestHitShader, mRtpipe->kRayGenShader,mRtpipe->kShadowMiss };
     ExportAssociation configAssociation(shaderExports, arraysize(shaderExports), &(subobjects[shaderConfigIndex]));
     subobjects[index++] = configAssociation.subobject; // 9 Associate Shader Config to Miss, CHS, RGS
 
@@ -168,7 +176,7 @@ void CppDirectXRayTracing17::Application::CreateShaderTable()
     mShaderTableEntrySize = D3D12_SHADER_IDENTIFIER_SIZE_IN_BYTES;
     mShaderTableEntrySize += 8; // The ray-gen's descriptor table
     mShaderTableEntrySize = align_to(D3D12_RAYTRACING_SHADER_RECORD_BYTE_ALIGNMENT, mShaderTableEntrySize);
-    uint32_t shaderTableSize = mShaderTableEntrySize * 3;
+    uint32_t shaderTableSize = mShaderTableEntrySize * 4;
 
     // For simplicity, we create the shader-table on the upload heap. You can also create it on the default heap
     mpShaderTable = mAccelerateStruct->createBuffer(mpDevice, shaderTableSize, D3D12_RESOURCE_FLAG_NONE, D3D12_RESOURCE_STATE_GENERIC_READ, kUploadHeapProps);
@@ -188,9 +196,10 @@ void CppDirectXRayTracing17::Application::CreateShaderTable()
 
     // Entry 1 - miss program
     memcpy(pData + mShaderTableEntrySize, pRtsoProps->GetShaderIdentifier(mRtpipe->kMissShader), D3D12_SHADER_IDENTIFIER_SIZE_IN_BYTES);
-
-    // Entry 2 - hit program
-    uint8_t* pHitEntry = pData + mShaderTableEntrySize * 2; // +2 skips the ray-gen and miss entries
+    // Entry 2 - miss program
+    memcpy(pData + mShaderTableEntrySize*2, pRtsoProps->GetShaderIdentifier(mRtpipe->kShadowMiss), D3D12_SHADER_IDENTIFIER_SIZE_IN_BYTES);
+    // Entry 3 - hit program
+    uint8_t* pHitEntry = pData + mShaderTableEntrySize * 3; // +3 skips the ray-gen and 2 miss entries
     memcpy(pHitEntry, pRtsoProps->GetShaderIdentifier(mRtpipe->kHitGroup), D3D12_SHADER_IDENTIFIER_SIZE_IN_BYTES);
     // Tutorial 16
     heapStart = mpSrvUavHeap->GetGPUDescriptorHandleForHeapStart().ptr;
@@ -232,39 +241,34 @@ void CppDirectXRayTracing17::Application::createShaderResources()
     D3D12_CPU_DESCRIPTOR_HANDLE srvHandle = mpSrvUavHeap->GetCPUDescriptorHandleForHeapStart();
     srvHandle.ptr += mpDevice->GetDescriptorHandleIncrementSize(D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV);
     mpDevice->CreateShaderResourceView(nullptr, &srvDesc, srvHandle);
-
+   
     // tutorial 16
     //Create index srv
-    std::vector<D3D12_SHADER_RESOURCE_VIEW_DESC> indexsrvDesc = {};
-    std::vector<D3D12_SHADER_RESOURCE_VIEW_DESC> vertexsrvDesc = {};
-    indexsrvDesc.resize(2);
-    vertexsrvDesc.resize(2);
-    for (int i = 0; i < 2; i++)
-    {
-        indexsrvDesc[i].ViewDimension = D3D12_SRV_DIMENSION_BUFFER;
-        indexsrvDesc[i].Shader4ComponentMapping = D3D12_DEFAULT_SHADER_4_COMPONENT_MAPPING;
-        indexsrvDesc[i].Format = DXGI_FORMAT_R32_TYPELESS; //todo: check r32 typeless
-        indexsrvDesc[i].Buffer.NumElements = static_cast<int>(mAccelerateStruct->GetIndexCount()[i] * 2 / 4);
-        indexsrvDesc[i].Buffer.Flags = D3D12_BUFFER_SRV_FLAG_RAW;
-        indexsrvDesc[i].Buffer.StructureByteStride = 0;
+    D3D12_SHADER_RESOURCE_VIEW_DESC indexsrvDesc = {};
+    D3D12_SHADER_RESOURCE_VIEW_DESC vertexsrvDesc = {};
+    int i = 0;
+    indexsrvDesc.ViewDimension = D3D12_SRV_DIMENSION_BUFFER;
+    indexsrvDesc.Shader4ComponentMapping = D3D12_DEFAULT_SHADER_4_COMPONENT_MAPPING;
+    indexsrvDesc.Format = DXGI_FORMAT_R32_TYPELESS; //todo: check r32 typeless
+    indexsrvDesc.Buffer.NumElements = static_cast<int>(mAccelerateStruct->GetIndexCount() * 2 / 4);
+    indexsrvDesc.Buffer.Flags = D3D12_BUFFER_SRV_FLAG_RAW;
+    indexsrvDesc.Buffer.StructureByteStride = 0;
 
-        srvHandle.ptr += mpDevice->GetDescriptorHandleIncrementSize(D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV);
-        D3D12_CPU_DESCRIPTOR_HANDLE indexsrvHandle = srvHandle;
-        mpDevice->CreateShaderResourceView(mAccelerateStruct->GetIndexBuffer().data()[i], &indexsrvDesc.data()[i], indexsrvHandle);
+    srvHandle.ptr += mpDevice->GetDescriptorHandleIncrementSize(D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV);
+    D3D12_CPU_DESCRIPTOR_HANDLE indexsrvHandle = srvHandle;
+    mpDevice->CreateShaderResourceView(mAccelerateStruct->GetIndexBuffer(), &indexsrvDesc, indexsrvHandle);
 
-        //Create vertex srv
-        vertexsrvDesc[i].ViewDimension = D3D12_SRV_DIMENSION_BUFFER;
-        vertexsrvDesc[i].Shader4ComponentMapping = D3D12_DEFAULT_SHADER_4_COMPONENT_MAPPING;
-        vertexsrvDesc[i].Format = DXGI_FORMAT_UNKNOWN;
-        vertexsrvDesc[i].Buffer.NumElements = mAccelerateStruct->GetVertexCount()[i];
-        vertexsrvDesc[i].Buffer.Flags = D3D12_BUFFER_SRV_FLAG_NONE;
-        vertexsrvDesc[i].Buffer.StructureByteStride = sizeof(Primitives::Vertex);
-        
-        srvHandle.ptr += mpDevice->GetDescriptorHandleIncrementSize(D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV);
-        D3D12_CPU_DESCRIPTOR_HANDLE vertexsrvHandle = srvHandle;
-        mpDevice->CreateShaderResourceView(mAccelerateStruct->GetVertexBuffer().data()[i], &vertexsrvDesc.data()[i], vertexsrvHandle);
-    }
+    //Create vertex srv
+    vertexsrvDesc.ViewDimension = D3D12_SRV_DIMENSION_BUFFER;
+    vertexsrvDesc.Shader4ComponentMapping = D3D12_DEFAULT_SHADER_4_COMPONENT_MAPPING;
+    vertexsrvDesc.Format = DXGI_FORMAT_UNKNOWN;
+    vertexsrvDesc.Buffer.NumElements = mAccelerateStruct->GetVertexCount();
+    vertexsrvDesc.Buffer.Flags = D3D12_BUFFER_SRV_FLAG_NONE;
+    vertexsrvDesc.Buffer.StructureByteStride = sizeof(Primitives::Vertex);
 
+    srvHandle.ptr += mpDevice->GetDescriptorHandleIncrementSize(D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV);
+    D3D12_CPU_DESCRIPTOR_HANDLE vertexsrvHandle = srvHandle;
+    mpDevice->CreateShaderResourceView(mAccelerateStruct->GetVertexBuffer(), &vertexsrvDesc, vertexsrvHandle);
 }
 
 uint32_t CppDirectXRayTracing17::Application::beginFrame()
@@ -327,10 +331,10 @@ void CppDirectXRayTracing17::Application::onFrameRender()
     size_t missOffset = 1 * mShaderTableEntrySize;
     raytraceDesc.MissShaderTable.StartAddress = mpShaderTable->GetGPUVirtualAddress() + missOffset;
     raytraceDesc.MissShaderTable.StrideInBytes = mShaderTableEntrySize;
-    raytraceDesc.MissShaderTable.SizeInBytes = mShaderTableEntrySize;   // Only a s single miss-entry
+    raytraceDesc.MissShaderTable.SizeInBytes = mShaderTableEntrySize * 2;   // Only a s single miss-entry
 
     // Hit is the third entry in the shader-table
-    size_t hitOffset = 2 * mShaderTableEntrySize;
+    size_t hitOffset = 3 * mShaderTableEntrySize;
     raytraceDesc.HitGroupTable.StartAddress = mpShaderTable->GetGPUVirtualAddress() + hitOffset;
     raytraceDesc.HitGroupTable.StrideInBytes = mShaderTableEntrySize;
     raytraceDesc.HitGroupTable.SizeInBytes = mShaderTableEntrySize;

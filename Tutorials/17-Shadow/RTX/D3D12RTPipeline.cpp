@@ -126,6 +126,6 @@ CppDirectXRayTracing17::DxilLibrary CppDirectXRayTracing17::D3D12RTPipeline::cre
 {
     // Compile the shader
     ID3DBlobPtr pDxilLib = compileLibrary(kShaderName, L"lib_6_3");
-    const WCHAR* entryPoints[] = { kRayGenShader, kMissShader, kClosestHitShader };
+    const WCHAR* entryPoints[] = { kRayGenShader, kMissShader, kClosestHitShader, kShadowMiss };
     return DxilLibrary(pDxilLib, entryPoints, arraysize(entryPoints));
 }

@@ -47,8 +47,8 @@ namespace CppDirectXRayTracing17 {
         
         // Acceleration Structure
         std::unique_ptr<D3D12AccelerationStructures> mAccelerateStruct;
-        AccelerationStructureBuffers mBottomLevelBuffers[2];
-        ID3D12ResourcePtr mpTopLevelAS, mpBottomLevelAS[2];
+        AccelerationStructureBuffers mBottomLevelBuffers;
+        ID3D12ResourcePtr mpTopLevelAS, mpBottomLevelAS[1];
    
         uint64_t mTlasSize = 0;
 

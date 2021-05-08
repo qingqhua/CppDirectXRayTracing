@@ -4,14 +4,14 @@
 
 namespace Primitives
 {
-	class Cube
+	class Quad
 	{
 	public:
-		Cube() = default;
-		~Cube() = default;
+		Quad() = default;
+		~Quad() = default;
 
 		void Init(float size, bool uvHorizontalFlip = false, bool uvVerticalFlip = false, float uTileFactor = 1, float vTileFactor = 1);
-		void Transform(glm::mat4 transform);
+
 		std::vector <Vertex> GetVertices();
 		std::vector <uint16_t> GetIndices();
 	
