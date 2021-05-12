@@ -1,15 +1,19 @@
-//#include "Helper.hlsl"
 
 //------------------------------------
 // Helper functions
 //------------------------------------
-static const float3 cameraPosition = float3(0, 0, -5);
+static const float3 A = float3(1, 0, 0);
+static const float3 B = float3(0, 1, 0);
+static const float3 C = float3(0, 0, 1);
+static const float3 cameraPosition = float3(0, 0, -3);
 static const float4 backgroundColor = float4(1.0, 0.6, 0.2, 1.0);
 static const float4 lightAmbientColor = float4(0.2, 0.2, 0.2, 1.0);
 static const float3 lightPosition = float3(2.0, 2.0, -4.0);
 static const float4 lightDiffuseColor = float4(0.2, 1.0, 0.2, 1.0);
 static const float4 lightSpecularColor = float4(1, 1, 1, 1);
 static const float4 primitiveAlbedo = float4(0.1, 0.7, 0.6, 1.0);
+static const float4 groundAlbedo = float4(1.0, 0.0, 0.0, 1.0);
+static const float InShadowRadiance = 0.35f;
 static const float diffuseCoef = 0.9;
 static const float specularCoef = 0.7;
 static const float specularPower = 50;
@@ -55,26 +59,32 @@ float4 CalculateSpecularCoefficient(in float3 hitPosition, in float3 incidentLig
 
 
 // Phong lighting model = ambient + diffuse + specular components.
-float4 CalculatePhongLighting(in float4 albedo, in float3 normal, in float diffuseCoef = 1.0, in float specularCoef = 1.0, in float specularPower = 50)
+float4 CalculatePhongLighting(in float4 albedo, in float3 normal, in bool isInShadow, in float diffuseCoef = 1.0, in float specularCoef = 1.0, in float specularPower = 50)
 {
 	float3 hitPosition = HitWorldPosition();
+	float shadowFactor = isInShadow ? InShadowRadiance : 1.0;
 	float3 incidentLightRay = normalize(hitPosition - lightPosition);
 
 	// Diffuse component.
 	float Kd = CalculateDiffuseCoefficient(hitPosition, incidentLightRay, normal);
-	float4 diffuseColor = diffuseCoef * Kd * lightDiffuseColor * albedo;
+	float4 diffuseColor = shadowFactor * diffuseCoef * Kd * lightDiffuseColor * albedo;
 
 	// Specular component.
 	float4 specularColor = float4(0, 0, 0, 0);
-	float4 Ks = CalculateSpecularCoefficient(hitPosition, incidentLightRay, normal, specularPower);
-	specularColor = specularCoef * Ks * lightSpecularColor;
+	if (!isInShadow)
+	{
+		float4 lightSpecularColor = float4(1, 1, 1, 1);
+		float4 Ks = CalculateSpecularCoefficient(hitPosition, incidentLightRay, normal, specularPower);
+		specularColor = specularCoef * Ks * lightSpecularColor;
+	}
 
 	// Ambient component.
 	// Fake AO: Darken faces with normal facing downwards/away from the sky a little bit.
+	float4 ambientColor = lightAmbientColor;
 	float4 ambientColorMin = lightAmbientColor - 0.15;
 	float4 ambientColorMax = lightAmbientColor;
-	float fNDotL = saturate(dot(-incidentLightRay, normal));
-	float4 ambientColor = albedo * lerp(ambientColorMin, ambientColorMax, fNDotL);
+	float a = 1 - saturate(dot(normal, float3(0, -1, 0)));
+	ambientColor = albedo * lerp(ambientColorMin, ambientColorMax, a);
 
 	return ambientColor + diffuseColor + specularColor;
 }
@@ -123,7 +133,6 @@ StructuredBuffer<Vertex> Vertices : register(t2);
 struct RayPayload
 {
 	float4 color;
-	uint recursionDepth;
 };
 
 struct ShadowPayload
@@ -140,30 +149,23 @@ void rayGen()
     float2 crd = float2(launchIndex.xy);
     float2 dims = float2(launchDim.xy);
 
-    float2 d = ((crd/dims) * 2.f - 1.f);
+    float2 d = ((crd / dims) * 2.f - 1.f);
     float aspectRatio = dims.x / dims.y;
 
     RayDesc ray;
-    ray.Origin = cameraPosition;
+	ray.Origin = cameraPosition;
     ray.Direction = normalize(float3(d.x * aspectRatio, -d.y, 1));
 
     ray.TMin = 0;
     ray.TMax = 100000;
 
     RayPayload payload;
-    TraceRay( gRtScene,
-        0 /*rayFlags*/,
-        0xFF, 
-        0 /* ray index*/,
-        0/* Multiplies */,
-        0/* Miss index */,
-        ray,
-        payload );
+    TraceRay(gRtScene, 0 /*rayFlags*/, 0xFF, 0 /* ray index*/, 2, 0, ray, payload);
 
-    float4 col = 
     gOutput[launchIndex.xy] = linearToSrgb(payload.color);
 }
 
+// miss primary 
 [shader("miss")]
 void miss(inout RayPayload payload)
 {
@@ -177,36 +179,79 @@ float3 HitAttribute(float3 vertexAttribute[3], BuiltInTriangleIntersectionAttrib
 		attr.barycentrics.y * (vertexAttribute[2] - vertexAttribute[0]);
 }
 
+// Hit primary - triangle
 [shader("closesthit")]
-void chs(inout RayPayload payload, in BuiltInTriangleIntersectionAttributes attribs)
+void triangleChs(inout RayPayload payload, in BuiltInTriangleIntersectionAttributes attribs)
 {
-    float3 hitPosition = WorldRayOrigin() + RayTCurrent() * WorldRayDirection();
+	// Lighting of the objects.
+	float3 hitPosition = HitWorldPosition();
 
-    // Get the base index of the triangle's first 16 bit index.
-    uint indexSizeInBytes = 2;
-    uint indicesPerTriangle = 3;
-    uint triangleIndexStride = indicesPerTriangle * indexSizeInBytes;
-    uint baseIndex = PrimitiveIndex() * triangleIndexStride;
+	// Get the base index of the triangle's first 16 bit index.
+	uint indexSizeInBytes = 2;
+	uint indicesPerTriangle = 3;
+	uint triangleIndexStride = indicesPerTriangle * indexSizeInBytes;
+	uint baseIndex = PrimitiveIndex() * triangleIndexStride;
 
-    // Load up 3 16 bit indices for the triangle.
-    const uint3 indices = Load3x16BitIndices(Indices, baseIndex);
+	// Load up 3 16 bit indices for the triangle.
+	const uint3 indices = Load3x16BitIndices(Indices, baseIndex);
 
-    // Retrieve corresponding vertex normals for the triangle vertices.
-    float3 vertexNormals[3] = {
-        Vertices[indices[0]].Normal,
-        Vertices[indices[1]].Normal,
-        Vertices[indices[2]].Normal
-    };
+	// Retrieve corresponding vertex normals for the triangle vertices.
+	float3 vertexNormals[3] = {
+		Vertices[indices[0]].Normal,
+		Vertices[indices[1]].Normal,
+		Vertices[indices[2]].Normal
+	};
 
-    float3 hitNormal = HitAttribute(vertexNormals, attribs);
+	//float3 hitNormal = (InstanceID() == 0) ? float3(0, 1, 0) : HitAttribute(vertexNormals, attribs);
+	float3 hitNormal = HitAttribute(vertexNormals, attribs);
 
-    // Calculate final color.
-    float4 phongColor = CalculatePhongLighting(primitiveAlbedo, hitNormal, diffuseCoef, specularCoef, specularPower);
-    payload.color = phongColor;
+
+	// Calculate final color.
+	float4 diffuseColor = (InstanceID() == 0) ? groundAlbedo : primitiveAlbedo;
+	float4 phongColor = CalculatePhongLighting(diffuseColor, hitNormal, false, diffuseCoef, specularCoef, specularPower);
+	float4 color = phongColor;
+
+	float t = RayTCurrent();
+	color = lerp(color, backgroundColor, 1.0 - exp(-0.000002 * t * t * t));
+	
+	payload.color = color;
 }
 
+// Hit primary - plane
+[shader("closesthit")]
+void planeChs(inout RayPayload payload, in BuiltInTriangleIntersectionAttributes attribs)
+{
+    float hitT = RayTCurrent();
+    float3 rayDirW = WorldRayDirection();
+    float3 rayOriginW = WorldRayOrigin();
+
+    // Find the world-space hit position
+    float3 posW = rayOriginW + hitT * rayDirW;
+
+    // Fire a shadow ray. The direction is hard-coded here, but can be fetched from a constant-buffer
+    RayDesc ray;
+    ray.Origin = posW;
+    ray.Direction = normalize(float3(0.5, 0.5, -0.5));
+    ray.TMin = 0.01;
+    ray.TMax = 100000;
+    ShadowPayload shadowPayload;
+    TraceRay(gRtScene, 0  /*rayFlags*/, 0xFF, 1 /* ray index*/, 0, 1, ray, shadowPayload);
+
+    float factor = shadowPayload.hit ? 0.1 : 1.0;
+    payload.color = float4(0.9f, 0.9f, 0.9f, 1.0f) * factor;
+}
+
+// Hit shadow
+[shader("closesthit")]
+void shadowChs(inout ShadowPayload payload, in BuiltInTriangleIntersectionAttributes attribs)
+{
+    payload.hit = true;
+}
+
+// Miss shadow
 [shader("miss")]
 void shadowMiss(inout ShadowPayload payload)
 {
-	payload.hit = false;
+    payload.hit = false;
 }
+

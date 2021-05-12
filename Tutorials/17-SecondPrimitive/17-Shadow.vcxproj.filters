@@ -90,5 +90,8 @@
     <FxCompile Include="Data\Shaders.hlsl">
       <Filter>Data</Filter>
     </FxCompile>
+    <FxCompile Include="Data\Shaders-18.hlsl">
+      <Filter>Data</Filter>
+    </FxCompile>
   </ItemGroup>
 </Project>

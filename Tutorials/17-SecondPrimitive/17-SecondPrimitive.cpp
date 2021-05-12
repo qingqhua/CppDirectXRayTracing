@@ -135,7 +135,7 @@ void CppDirectXRayTracing17::Application::CreateRtPipelineState()
     subobjects[index++] = missRootAssociation.subobject; // 7 Associate Miss Root Sig to Miss Shader
 
     // Bind the payload size to the programs
-    ShaderConfig shaderConfig(sizeof(float) * 2, sizeof(float) * 5);
+    ShaderConfig shaderConfig(sizeof(float) * 2, sizeof(float) * (4+2));
     subobjects[index] = shaderConfig.subobject; // 8 Shader Config
 
     uint32_t shaderConfigIndex = index++; // 8
@@ -226,7 +226,7 @@ void CppDirectXRayTracing17::Application::createShaderResources()
 
     // tutorial 17
     // Create an SRV/UAV/VertexSRV/IndexSRV descriptor heap. Need 6 entries - 1 SRV for the scene, 1 UAV for the output, 2 SRV for VertexBuffer, 2 SRV for IndexBuffer
-    mpSrvUavHeap = mContext->createDescriptorHeap(mpDevice, 6, D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV, true);
+    mpSrvUavHeap = mContext->createDescriptorHeap(mpDevice, 4, D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV, true);
 
     // Create the UAV. Based on the root signature we created it should be the first entry
     D3D12_UNORDERED_ACCESS_VIEW_DESC uavDesc = {};
@@ -365,5 +365,5 @@ void CppDirectXRayTracing17::Application::onShutdown()
 
 int WINAPI WinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstance, _In_ LPSTR lpCmdLine, _In_ int nShowCmd)
 {
-    Framework::run(CppDirectXRayTracing17::Application(), "Tutorial 15");
+    Framework::run(CppDirectXRayTracing17::Application(), "Tutorial 17");
 }

@@ -9,7 +9,7 @@
 #include "RTX/Structs/ShaderConfig.hpp"
 #include "RTX/Structs/PipelineConfig.hpp"
 
-namespace CppDirectXRayTracing17 {
+namespace CppDirectXRayTracing18 {
     class Application : public Tutorial
     {
     public:
@@ -19,6 +19,14 @@ namespace CppDirectXRayTracing17 {
 
         void InitDXR(HWND winHandle, uint32_t winWidth, uint32_t winHeight);
         void CreateAccelerationStructures();
+
+        void testCreateAccelerationStructures();
+        AccelerationStructureBuffers createTopLevelAS(ID3D12Device5Ptr pDevice, ID3D12GraphicsCommandList4Ptr pCmdList, ID3D12ResourcePtr pBottomLevelAS[2], uint64_t& tlasSize);
+        AccelerationStructureBuffers createBottomLevelAS(ID3D12Device5Ptr pDevice, ID3D12GraphicsCommandList4Ptr pCmdList, ID3D12ResourcePtr pVB[], const uint32_t vertexCount[], uint32_t geometryCount);
+        ID3D12ResourcePtr createPlaneVB(ID3D12Device5Ptr pDevice);
+        ID3D12ResourcePtr createTriangleVB(ID3D12Device5Ptr pDevice);
+
+
         void CreateRtPipelineState();
         void CreateShaderTable();
         void createShaderResources();
@@ -30,7 +38,7 @@ namespace CppDirectXRayTracing17 {
         static const uint32_t kRtvHeapSize = 3;
         static const uint32_t kSrvUavHeapSize = 2;
         static const uint32_t kNumSubobjects = 12;
-        static const uint32_t kMaxTraceRecursionDepth = 1;
+        static const uint32_t kMaxTraceRecursionDepth = 5;
 
         std::unique_ptr<D3D12GraphicsContext> mContext;
         std::vector<FrameObject> mFrameObjects;
@@ -47,8 +55,8 @@ namespace CppDirectXRayTracing17 {
         
         // Acceleration Structure
         std::unique_ptr<D3D12AccelerationStructures> mAccelerateStruct;
-        AccelerationStructureBuffers mBottomLevelBuffers;
-        ID3D12ResourcePtr mpTopLevelAS, mpBottomLevelAS[1];
+        AccelerationStructureBuffers mBottomLevelBuffers[2];
+        ID3D12ResourcePtr mTopLevelAS, mBottomLevelAS[2];
    
         uint64_t mTlasSize = 0;
 

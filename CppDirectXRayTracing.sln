@@ -23,7 +23,7 @@ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "15-Primitive", "Tutorials\1
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "16-Light", "Tutorials\16-Light\16-Light.vcxproj", "{C207900B-07C7-4865-9B7F-070C40C6611D}"
 EndProject
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "17-Shadow", "Tutorials\17-Shadow\17-Shadow.vcxproj", "{993BBCD1-BD7C-4A0F-AD80-E93E7DC4F9A1}"
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "18-Shadow", "Tutorials\18-Shadow\18-Shadow.vcxproj", "{993BBCD1-BD7C-4A0F-AD80-E93E7DC4F9A1}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
