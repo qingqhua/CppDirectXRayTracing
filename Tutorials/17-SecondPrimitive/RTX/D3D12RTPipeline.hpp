@@ -15,7 +15,7 @@ namespace CppDirectXRayTracing17
 		RootSignatureDesc createHitRootDesc();
 		DxilLibrary createDxilLibrary();
 
-		const WCHAR* kShaderName = L"Data/Shaders-18.hlsl";//L"Data/Shaders.hlsl";
+		const WCHAR* kShaderName = L"Data/Shaders.hlsl";
 		const WCHAR* kRayGenShader = L"rayGen";
 		const WCHAR* kMissShader = L"miss";
 		const WCHAR* kClosestHitShader = L"chs";

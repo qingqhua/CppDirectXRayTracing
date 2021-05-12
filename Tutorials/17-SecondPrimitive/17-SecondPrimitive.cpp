@@ -1,5 +1,5 @@
 #pragma once
-#include "17-Shadow.hpp"
+#include "17-SecondPrimitive.hpp"
 
 void CppDirectXRayTracing17::Application::InitDXR(HWND winHandle, uint32_t winWidth, uint32_t winHeight)
 {
@@ -51,19 +51,6 @@ void CppDirectXRayTracing17::Application::InitDXR(HWND winHandle, uint32_t winWi
 
 void CppDirectXRayTracing17::Application::CreateAccelerationStructures()
 {
-    // Bind primitive vertex buffer and index buffer to BLAS. 
-    /*auto& vBufferSphere = mAccelerateStruct->CreateSphereVB(mpDevice);
-    auto& iBufferSphere = mAccelerateStruct->CreateSphereIB(mpDevice);
-    mBottomLevelBuffers[0]= mAccelerateStruct->createBottomLevelAS(mpDevice, mpCmdList, vBufferSphere, iBufferSphere, mAccelerateStruct->GetVertexCount()[0], mAccelerateStruct->GetIndexCount()[0]);
-
-    auto& vBufferCube = mAccelerateStruct->createCubeVB(mpDevice);
-    auto& iBufferCube = mAccelerateStruct->createCubeIB(mpDevice);
-    mBottomLevelBuffers[1] = mAccelerateStruct->createBottomLevelAS(mpDevice, mpCmdList, vBufferCube, iBufferCube, mAccelerateStruct->GetVertexCount()[1], mAccelerateStruct->GetIndexCount()[1]);
-
-    mpBottomLevelAS[0] = mBottomLevelBuffers[0].pResult;
-    mpBottomLevelAS[1] = mBottomLevelBuffers[1].pResult;
-    */
-
     mAccelerateStruct->CreateSceneVBIB(mpDevice);
     mBottomLevelBuffers = mAccelerateStruct->createBottomLevelAS(mpDevice, mpCmdList, mAccelerateStruct->GetVertexBuffer(), mAccelerateStruct->GetIndexBuffer(), mAccelerateStruct->GetVertexCount(), mAccelerateStruct->GetIndexCount());
     mpBottomLevelAS[0] = mBottomLevelBuffers.pResult;
@@ -135,7 +122,7 @@ void CppDirectXRayTracing17::Application::CreateRtPipelineState()
     subobjects[index++] = missRootAssociation.subobject; // 7 Associate Miss Root Sig to Miss Shader
 
     // Bind the payload size to the programs
-    ShaderConfig shaderConfig(sizeof(float) * 2, sizeof(float) * (4+2));
+    ShaderConfig shaderConfig(sizeof(float) * 2, sizeof(float) * (4+1));
     subobjects[index] = shaderConfig.subobject; // 8 Shader Config
 
     uint32_t shaderConfigIndex = index++; // 8
