@@ -93,28 +93,35 @@ CppDirectXRayTracing18::RootSignatureDesc CppDirectXRayTracing18::D3D12RTPipelin
 CppDirectXRayTracing18::RootSignatureDesc CppDirectXRayTracing18::D3D12RTPipeline::createTriangleHitRootDesc()
 {
     RootSignatureDesc desc;
+    desc.range.resize(3);
 
-    desc.range.resize(2);
-    // indices
+    // gRtScene
+    desc.range[0].BaseShaderRegister = 0;
     desc.range[0].NumDescriptors = 1;
-    desc.range[0].BaseShaderRegister = 1;
     desc.range[0].RegisterSpace = 0;
     desc.range[0].RangeType = D3D12_DESCRIPTOR_RANGE_TYPE_SRV;
-    desc.range[0].OffsetInDescriptorsFromTableStart = 2;
+    desc.range[0].OffsetInDescriptorsFromTableStart = 1;
 
-    // vertices
+    // indices
     desc.range[1].NumDescriptors = 1;
-    desc.range[1].BaseShaderRegister = 2;
+    desc.range[1].BaseShaderRegister = 1;
     desc.range[1].RegisterSpace = 0;
     desc.range[1].RangeType = D3D12_DESCRIPTOR_RANGE_TYPE_SRV;
-    desc.range[1].OffsetInDescriptorsFromTableStart = 3;
+    desc.range[1].OffsetInDescriptorsFromTableStart = 2;
+
+    // vertices
+    desc.range[2].NumDescriptors = 1;
+    desc.range[2].BaseShaderRegister = 2;
+    desc.range[2].RegisterSpace = 0;
+    desc.range[2].RangeType = D3D12_DESCRIPTOR_RANGE_TYPE_SRV;
+    desc.range[2].OffsetInDescriptorsFromTableStart = 3;
 
     // Create desc
     desc.rootParams.resize(1);
     desc.rootParams[0].ParameterType = D3D12_ROOT_PARAMETER_TYPE_DESCRIPTOR_TABLE;
     //desc.rootParams[0].Descriptor.RegisterSpace = 0;
     //desc.rootParams[0].Descriptor.ShaderRegister = 0;
-    desc.rootParams[0].DescriptorTable.NumDescriptorRanges = 2;
+    desc.rootParams[0].DescriptorTable.NumDescriptorRanges = 3;
     desc.rootParams[0].DescriptorTable.pDescriptorRanges = desc.range.data();
 
     desc.desc.NumParameters = 1;

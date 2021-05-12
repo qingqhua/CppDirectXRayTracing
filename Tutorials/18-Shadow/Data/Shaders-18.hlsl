@@ -129,6 +129,8 @@ RaytracingAccelerationStructure gRtScene : register(t0);
 RWTexture2D<float4> gOutput : register(u0);
 ByteAddressBuffer Indices : register(t1);
 StructuredBuffer<Vertex> Vertices : register(t2);
+//ByteAddressBuffer IndicesPlane : register(t3);
+//StructuredBuffer<Vertex> VerticesPlane : register(t4);
 
 struct RayPayload
 {
@@ -183,6 +185,22 @@ float3 HitAttribute(float3 vertexAttribute[3], BuiltInTriangleIntersectionAttrib
 [shader("closesthit")]
 void triangleChs(inout RayPayload payload, in BuiltInTriangleIntersectionAttributes attribs)
 {
+	float hitT = RayTCurrent();
+	float3 rayDirW = WorldRayDirection();
+	float3 rayOriginW = WorldRayOrigin();
+
+	// Find the world-space hit position
+	float3 posW = rayOriginW + hitT * rayDirW;
+
+	// Fire a shadow ray. The direction is hard-coded here, but can be fetched from a constant-buffer
+	RayDesc ray;
+	ray.Origin = posW;
+	ray.Direction = normalize(float3(0.5, 0.5, -0.5));
+	ray.TMin = 0.01;
+	ray.TMax = 100000;
+	ShadowPayload shadowPayload;
+	TraceRay(gRtScene, 0  /*rayFlags*/, 0xFF, 1 /* ray index*/, 0, 1, ray, shadowPayload);
+
 	// Lighting of the objects.
 	float3 hitPosition = HitWorldPosition();
 

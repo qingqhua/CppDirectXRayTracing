@@ -85,199 +85,6 @@ void CppDirectXRayTracing18::Application::CreateAccelerationStructures()
     
 }
 
-void CppDirectXRayTracing18::Application::testCreateAccelerationStructures()
-{
-    mAccelerateStruct->CreateScenePrimitives(mpDevice);
-    ID3D12ResourcePtr mpVertexBuffer[2];
-    //std::vector<ID3D12ResourcePtr> mpVertexBuffer;
-    mpVertexBuffer[0] = createTriangleVB(mpDevice);
-    mpVertexBuffer[1] = createPlaneVB(mpDevice);
-    AccelerationStructureBuffers bottomLevelBuffers[2];
-
-    // The first bottom-level buffer is for the plane and the triangle
-    const uint32_t vertexCount[] = { 3, 6 }; // Triangle has 3 vertices, plane has 6
-    //std::vector<uint32_t> vertexCount;
-    //vertexCount.p
-
-    //bottomLevelBuffers[0] =  mAccelerateStruct->createBottomLevelAS(mpDevice, mpCmdList, mAccelerateStruct->GetVertexBuffer(), vertexCount, 2);
-    mBottomLevelAS[0] = bottomLevelBuffers[0].pResult;
-
-    // The second bottom-level buffer is for the triangle only
-    bottomLevelBuffers[1] = createBottomLevelAS(mpDevice, mpCmdList, mpVertexBuffer, vertexCount, 1);
-    mBottomLevelAS[1] = bottomLevelBuffers[1].pResult;
-
-    // Create the TLAS
-    AccelerationStructureBuffers topLevelBuffers = createTopLevelAS(mpDevice, mpCmdList, mBottomLevelAS, mTlasSize);
-
-    // The tutorial doesn't have any resource lifetime management, so we flush and sync here. This is not required by the DXR spec - you can submit the list whenever you like as long as you take care of the resources lifetime.
-    mFenceValue = mContext->submitCommandList(mpCmdList, mpCmdQueue, mpFence, mFenceValue);
-    mpFence->SetEventOnCompletion(mFenceValue, mFenceEvent);
-    WaitForSingleObject(mFenceEvent, INFINITE);
-    uint32_t bufferIndex = mpSwapChain->GetCurrentBackBufferIndex();
-    mpCmdList->Reset(mFrameObjects[0].pCmdAllocator, nullptr);
-
-    // Store the AS buffers. The rest of the buffers will be released once we exit the function
-    mTopLevelAS = topLevelBuffers.pResult;
-}
-
-CppDirectXRayTracing18::AccelerationStructureBuffers CppDirectXRayTracing18::Application::createTopLevelAS(ID3D12Device5Ptr pDevice, ID3D12GraphicsCommandList4Ptr pCmdList, ID3D12ResourcePtr pBottomLevelAS[2], uint64_t& tlasSize)
-{
-    // First, get the size of the TLAS buffers and create them
-    D3D12_BUILD_RAYTRACING_ACCELERATION_STRUCTURE_INPUTS inputs = {};
-    inputs.DescsLayout = D3D12_ELEMENTS_LAYOUT_ARRAY;
-    inputs.Flags = D3D12_RAYTRACING_ACCELERATION_STRUCTURE_BUILD_FLAG_NONE;
-    inputs.NumDescs = 3;
-    inputs.Type = D3D12_RAYTRACING_ACCELERATION_STRUCTURE_TYPE_TOP_LEVEL;
-
-    D3D12_RAYTRACING_ACCELERATION_STRUCTURE_PREBUILD_INFO info;
-    pDevice->GetRaytracingAccelerationStructurePrebuildInfo(&inputs, &info);
-
-    // Create the buffers
-    AccelerationStructureBuffers buffers;
-    buffers.pScratch = mAccelerateStruct->createBuffer(pDevice, info.ScratchDataSizeInBytes, D3D12_RESOURCE_FLAG_ALLOW_UNORDERED_ACCESS, D3D12_RESOURCE_STATE_UNORDERED_ACCESS, kDefaultHeapProps);
-    buffers.pResult = mAccelerateStruct->createBuffer(pDevice, info.ResultDataMaxSizeInBytes, D3D12_RESOURCE_FLAG_ALLOW_UNORDERED_ACCESS, D3D12_RESOURCE_STATE_RAYTRACING_ACCELERATION_STRUCTURE, kDefaultHeapProps);
-    tlasSize = info.ResultDataMaxSizeInBytes;
-
-    // The instance desc should be inside a buffer, create and map the buffer
-    buffers.pInstanceDesc = mAccelerateStruct->createBuffer(pDevice, sizeof(D3D12_RAYTRACING_INSTANCE_DESC) * 3, D3D12_RESOURCE_FLAG_NONE, D3D12_RESOURCE_STATE_GENERIC_READ, kUploadHeapProps);
-    D3D12_RAYTRACING_INSTANCE_DESC* instanceDescs;
-    buffers.pInstanceDesc->Map(0, nullptr, (void**)&instanceDescs);
-    ZeroMemory(instanceDescs, sizeof(D3D12_RAYTRACING_INSTANCE_DESC) * 3);
-
-    // The transformation matrices for the instances
-    mat4 transformation[3];
-    transformation[0] = mat4(); // Identity
-    transformation[1] = translate(mat4(), vec3(-2, 0, 0));
-    transformation[2] = translate(mat4(), vec3(2, 0, 0));
-
-    // Create the desc for the triangle/plane instance
-    instanceDescs[0].InstanceID = 0;
-    instanceDescs[0].InstanceContributionToHitGroupIndex = 0;
-    instanceDescs[0].Flags = D3D12_RAYTRACING_INSTANCE_FLAG_NONE;
-    memcpy(instanceDescs[0].Transform, &transformation[0], sizeof(instanceDescs[0].Transform));
-    instanceDescs[0].AccelerationStructure = pBottomLevelAS[0]->GetGPUVirtualAddress();
-    instanceDescs[0].InstanceMask = 0xFF;
-
-    for (uint32_t i = 1; i < 3; i++)
-    {
-        instanceDescs[i].InstanceID = i; // This value will be exposed to the shader via InstanceID()
-        instanceDescs[i].InstanceContributionToHitGroupIndex = (i * 2) + 2;  // The indices are relative to to the start of the hit-table entries specified in Raytrace(), so we need 4 and 6
-        instanceDescs[i].Flags = D3D12_RAYTRACING_INSTANCE_FLAG_NONE;
-        mat4 m = transpose(transformation[i]); // GLM is column major, the INSTANCE_DESC is row major
-        memcpy(instanceDescs[i].Transform, &m, sizeof(instanceDescs[i].Transform));
-        instanceDescs[i].AccelerationStructure = pBottomLevelAS[1]->GetGPUVirtualAddress();
-        instanceDescs[i].InstanceMask = 0xFF;
-    }
-
-    // Unmap
-    buffers.pInstanceDesc->Unmap(0, nullptr);
-
-    // Create the TLAS
-    D3D12_BUILD_RAYTRACING_ACCELERATION_STRUCTURE_DESC asDesc = {};
-    asDesc.Inputs = inputs;
-    asDesc.Inputs.InstanceDescs = buffers.pInstanceDesc->GetGPUVirtualAddress();
-    asDesc.DestAccelerationStructureData = buffers.pResult->GetGPUVirtualAddress();
-    asDesc.ScratchAccelerationStructureData = buffers.pScratch->GetGPUVirtualAddress();
-
-    pCmdList->BuildRaytracingAccelerationStructure(&asDesc, 0, nullptr);
-
-    // We need to insert a UAV barrier before using the acceleration structures in a raytracing operation
-    D3D12_RESOURCE_BARRIER uavBarrier = {};
-    uavBarrier.Type = D3D12_RESOURCE_BARRIER_TYPE_UAV;
-    uavBarrier.UAV.pResource = buffers.pResult;
-    pCmdList->ResourceBarrier(1, &uavBarrier);
-
-    return buffers;
-}
-
-CppDirectXRayTracing18::AccelerationStructureBuffers CppDirectXRayTracing18::Application::createBottomLevelAS(ID3D12Device5Ptr pDevice, ID3D12GraphicsCommandList4Ptr pCmdList, ID3D12ResourcePtr pVB[], const uint32_t vertexCount[], uint32_t geometryCount)
-{
-    std::vector<D3D12_RAYTRACING_GEOMETRY_DESC> geomDesc;
-    geomDesc.resize(geometryCount);
-
-    for (uint32_t i = 0; i < geometryCount; i++)
-    {
-        geomDesc[i].Type = D3D12_RAYTRACING_GEOMETRY_TYPE_TRIANGLES;
-        geomDesc[i].Triangles.VertexBuffer.StartAddress = pVB[i]->GetGPUVirtualAddress();
-        geomDesc[i].Triangles.VertexBuffer.StrideInBytes = sizeof(vec3);
-        geomDesc[i].Triangles.VertexCount = vertexCount[i];
-        geomDesc[i].Triangles.VertexFormat = DXGI_FORMAT_R32G32B32_FLOAT;
-        geomDesc[i].Flags = D3D12_RAYTRACING_GEOMETRY_FLAG_OPAQUE;
-    }
-
-    // Get the size requirements for the scratch and AS buffers
-    D3D12_BUILD_RAYTRACING_ACCELERATION_STRUCTURE_INPUTS inputs = {};
-    inputs.DescsLayout = D3D12_ELEMENTS_LAYOUT_ARRAY;
-    inputs.Flags = D3D12_RAYTRACING_ACCELERATION_STRUCTURE_BUILD_FLAG_NONE;
-    inputs.NumDescs = geometryCount;
-    inputs.pGeometryDescs = geomDesc.data();
-    inputs.Type = D3D12_RAYTRACING_ACCELERATION_STRUCTURE_TYPE_BOTTOM_LEVEL;
-
-    D3D12_RAYTRACING_ACCELERATION_STRUCTURE_PREBUILD_INFO info;
-    pDevice->GetRaytracingAccelerationStructurePrebuildInfo(&inputs, &info);
-
-    // Create the buffers. They need to support UAV, and since we are going to immediately use them, we create them with an unordered-access state
-    AccelerationStructureBuffers buffers;
-    buffers.pScratch = mAccelerateStruct->createBuffer(pDevice, info.ScratchDataSizeInBytes, D3D12_RESOURCE_FLAG_ALLOW_UNORDERED_ACCESS, D3D12_RESOURCE_STATE_COMMON, kDefaultHeapProps);
-    buffers.pResult = mAccelerateStruct->createBuffer(pDevice, info.ResultDataMaxSizeInBytes, D3D12_RESOURCE_FLAG_ALLOW_UNORDERED_ACCESS, D3D12_RESOURCE_STATE_RAYTRACING_ACCELERATION_STRUCTURE, kDefaultHeapProps);
-
-    // Create the bottom-level AS
-    D3D12_BUILD_RAYTRACING_ACCELERATION_STRUCTURE_DESC asDesc = {};
-    asDesc.Inputs = inputs;
-    asDesc.DestAccelerationStructureData = buffers.pResult->GetGPUVirtualAddress();
-    asDesc.ScratchAccelerationStructureData = buffers.pScratch->GetGPUVirtualAddress();
-
-    pCmdList->BuildRaytracingAccelerationStructure(&asDesc, 0, nullptr);
-
-    // We need to insert a UAV barrier before using the acceleration structures in a raytracing operation
-    D3D12_RESOURCE_BARRIER uavBarrier = {};
-    uavBarrier.Type = D3D12_RESOURCE_BARRIER_TYPE_UAV;
-    uavBarrier.UAV.pResource = buffers.pResult;
-    pCmdList->ResourceBarrier(1, &uavBarrier);
-
-    return buffers;
-}
-
-ID3D12ResourcePtr CppDirectXRayTracing18::Application::createPlaneVB(ID3D12Device5Ptr pDevice)
-{
-    const vec3 vertices[] =
-    {
-        vec3(-100, -1,  -2),
-        vec3(100, -1,  100),
-        vec3(-100, -1,  100),
-
-        vec3(-100, -1,  -2),
-        vec3(100, -1,  -2),
-        vec3(100, -1,  100),
-    };
-
-    // For simplicity, we create the vertex buffer on the upload heap, but that's not required
-    ID3D12ResourcePtr pBuffer = mAccelerateStruct->createBuffer(pDevice, sizeof(vertices), D3D12_RESOURCE_FLAG_NONE, D3D12_RESOURCE_STATE_GENERIC_READ, kUploadHeapProps);
-    uint8_t* pData;
-    pBuffer->Map(0, nullptr, (void**)&pData);
-    memcpy(pData, vertices, sizeof(vertices));
-    pBuffer->Unmap(0, nullptr);
-    return pBuffer;
-}
-
-ID3D12ResourcePtr CppDirectXRayTracing18::Application::createTriangleVB(ID3D12Device5Ptr pDevice)
-{
-    const vec3 vertices[] =
-    {
-        vec3(0,          1,  0),
-        vec3(0.866f,  -0.5f, 0),
-        vec3(-0.866f, -0.5f, 0),
-    };
-
-    // For simplicity, we create the vertex buffer on the upload heap, but that's not required
-    ID3D12ResourcePtr pBuffer = mAccelerateStruct->createBuffer(pDevice, sizeof(vertices), D3D12_RESOURCE_FLAG_NONE, D3D12_RESOURCE_STATE_GENERIC_READ, kUploadHeapProps);
-    uint8_t* pData;
-    pBuffer->Map(0, nullptr, (void**)&pData);
-    memcpy(pData, vertices, sizeof(vertices));
-    pBuffer->Unmap(0, nullptr);
-    return pBuffer;
-}
-
 void CppDirectXRayTracing18::Application::CreateRtPipelineState()
 {
     // Need 16 subobjects:
@@ -302,7 +109,7 @@ void CppDirectXRayTracing18::Application::CreateRtPipelineState()
     subobjects[index++] = triHitProgram.subObject; // 1 Triangle Hit Group
 
     // Create the plane HitProgram
-    HitProgram planeHitProgram(nullptr, mRtpipe->kPlaneChs, mRtpipe->kPlaneHitGroup);
+    HitProgram planeHitProgram(nullptr, mRtpipe->kPlaneChs, mRtpipe->kPlaneHitGroup);//kPlaneHitGroup
     subobjects[index++] = planeHitProgram.subObject; // 2 Plant Hit Group
 
     // Create the shadow-ray hit group
@@ -318,7 +125,7 @@ void CppDirectXRayTracing18::Application::CreateRtPipelineState()
     subobjects[index++] = rgsRootAssociation.subobject; // 5 Associate Root Sig to RGS
 
     // Create the tri hit root-signature and association
-    LocalRootSignature triHitRootSignature(mpDevice, mRtpipe->createTriangleHitRootDesc().desc);
+    LocalRootSignature triHitRootSignature(mpDevice, mRtpipe->createTriangleHitRootDesc().desc); //createTriangleHitRootDesc
     subobjects[index] = triHitRootSignature.subobject; // 6 Triangle Hit Root Sig
 
     uint32_t triHitRootIndex = index++; // 6
@@ -326,7 +133,7 @@ void CppDirectXRayTracing18::Application::CreateRtPipelineState()
     subobjects[index++] = triHitRootAssociation.subobject; // 7 Associate Triangle Root Sig to Triangle Hit Group
 
     // Create the plane hit root-signature and association
-    LocalRootSignature planeHitRootSignature(mpDevice, mRtpipe->createPlaneHitRootDesc().desc);
+    LocalRootSignature planeHitRootSignature(mpDevice, mRtpipe->createPlaneHitRootDesc().desc); //createPlaneHitRootDesc
     subobjects[index] = planeHitRootSignature.subobject; // 8 Plane Hit Root Sig
 
     uint32_t planeHitRootIndex = index++; // 8
@@ -345,7 +152,7 @@ void CppDirectXRayTracing18::Application::CreateRtPipelineState()
     subobjects[index++] = emptyRootAssociation.subobject; // 11 Associate empty root sig to Plane Hit Group and Miss shader
 
     // Bind the payload size to all programs
-    ShaderConfig primaryShaderConfig(sizeof(float) * 2, sizeof(float) * 4);
+    ShaderConfig primaryShaderConfig(sizeof(float) * 2, sizeof(float) * 5);
     subobjects[index] = primaryShaderConfig.subobject; // 12
 
     uint32_t primaryShaderConfigIndex = index++;
@@ -354,7 +161,7 @@ void CppDirectXRayTracing18::Application::CreateRtPipelineState()
     subobjects[index++] = primaryConfigAssociation.subobject; // 13 Associate shader config to all programs
 
     // Create the pipeline config
-    PipelineConfig config(2); // maxRecursionDepth - 1 TraceRay() from the ray-gen, 1 TraceRay() from the primary hit-shader
+    PipelineConfig config(10); // maxRecursionDepth - 1 TraceRay() from the ray-gen, 1 TraceRay() from the primary hit-shader
     subobjects[index++] = config.subobject; // 14
 
     // Create the global root signature and store the empty signature
@@ -474,7 +281,8 @@ void CppDirectXRayTracing18::Application::createShaderResources()
 
     // tutorial 17
     // Create an SRV/UAV/VertexSRV/IndexSRV descriptor heap. Need 6 entries - 1 SRV for the scene, 1 UAV for the output, 2 SRV for VertexBuffer, 2 SRV for IndexBuffer
-    mpSrvUavHeap = mContext->createDescriptorHeap(mpDevice, 4, D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV, true);
+    int bufferCount = 1;
+    mpSrvUavHeap = mContext->createDescriptorHeap(mpDevice, 2 + bufferCount*2, D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV, true);
 
     // Create the UAV. Based on the root signature we created it should be the first entry
     D3D12_UNORDERED_ACCESS_VIEW_DESC uavDesc = {};
@@ -491,32 +299,40 @@ void CppDirectXRayTracing18::Application::createShaderResources()
     mpDevice->CreateShaderResourceView(nullptr, &srvDesc, srvHandle);
    
     // tutorial 16
-    //Create index srv
-    D3D12_SHADER_RESOURCE_VIEW_DESC indexsrvDesc = {};
-    D3D12_SHADER_RESOURCE_VIEW_DESC vertexsrvDesc = {};
+    
+    std::vector<D3D12_SHADER_RESOURCE_VIEW_DESC> indexsrvDesc = {};
+    std::vector < D3D12_SHADER_RESOURCE_VIEW_DESC> vertexsrvDesc = {};
+    
+    indexsrvDesc.resize(bufferCount);
+    vertexsrvDesc.resize(bufferCount);
 
-    indexsrvDesc.ViewDimension = D3D12_SRV_DIMENSION_BUFFER;
-    indexsrvDesc.Shader4ComponentMapping = D3D12_DEFAULT_SHADER_4_COMPONENT_MAPPING;
-    indexsrvDesc.Format = DXGI_FORMAT_R32_TYPELESS; //todo: check r32 typeless
-    indexsrvDesc.Buffer.NumElements = static_cast<int>(mAccelerateStruct->GetIndexCount()[0] * 2 / 4);
-    indexsrvDesc.Buffer.Flags = D3D12_BUFFER_SRV_FLAG_RAW;
-    indexsrvDesc.Buffer.StructureByteStride = 0;
+    for (int i = 0; i < bufferCount; i++)
+    {
+        //Create index srv
+        indexsrvDesc[i].ViewDimension = D3D12_SRV_DIMENSION_BUFFER;
+        indexsrvDesc[i].Shader4ComponentMapping = D3D12_DEFAULT_SHADER_4_COMPONENT_MAPPING;
+        indexsrvDesc[i].Format = DXGI_FORMAT_R32_TYPELESS; //todo: check r32 typeless
+        indexsrvDesc[i].Buffer.NumElements = static_cast<int>(mAccelerateStruct->GetIndexCount()[i] * 2 / 4);
+        indexsrvDesc[i].Buffer.Flags = D3D12_BUFFER_SRV_FLAG_RAW;
+        indexsrvDesc[i].Buffer.StructureByteStride = 0;
 
-    srvHandle.ptr += mpDevice->GetDescriptorHandleIncrementSize(D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV);
-    D3D12_CPU_DESCRIPTOR_HANDLE indexsrvHandle = srvHandle;
-    mpDevice->CreateShaderResourceView(mAccelerateStruct->GetIndexBuffer()[0], &indexsrvDesc, indexsrvHandle);
+        srvHandle.ptr += mpDevice->GetDescriptorHandleIncrementSize(D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV);
+        D3D12_CPU_DESCRIPTOR_HANDLE indexsrvHandle = srvHandle;
+        mpDevice->CreateShaderResourceView(mAccelerateStruct->GetIndexBuffer()[i], &indexsrvDesc[i], indexsrvHandle);
 
-    //Create vertex srv
-    vertexsrvDesc.ViewDimension = D3D12_SRV_DIMENSION_BUFFER;
-    vertexsrvDesc.Shader4ComponentMapping = D3D12_DEFAULT_SHADER_4_COMPONENT_MAPPING;
-    vertexsrvDesc.Format = DXGI_FORMAT_UNKNOWN;
-    vertexsrvDesc.Buffer.NumElements = mAccelerateStruct->GetVertexCount()[0];
-    vertexsrvDesc.Buffer.Flags = D3D12_BUFFER_SRV_FLAG_NONE;
-    vertexsrvDesc.Buffer.StructureByteStride = sizeof(Primitives::Vertex);
+        //Create vertex srv
+        vertexsrvDesc[i].ViewDimension = D3D12_SRV_DIMENSION_BUFFER;
+        vertexsrvDesc[i].Shader4ComponentMapping = D3D12_DEFAULT_SHADER_4_COMPONENT_MAPPING;
+        vertexsrvDesc[i].Format = DXGI_FORMAT_UNKNOWN;
+        vertexsrvDesc[i].Buffer.NumElements = mAccelerateStruct->GetVertexCount()[i];
+        vertexsrvDesc[i].Buffer.Flags = D3D12_BUFFER_SRV_FLAG_NONE;
+        vertexsrvDesc[i].Buffer.StructureByteStride = sizeof(Primitives::Vertex);
 
-    srvHandle.ptr += mpDevice->GetDescriptorHandleIncrementSize(D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV);
-    D3D12_CPU_DESCRIPTOR_HANDLE vertexsrvHandle = srvHandle;
-    mpDevice->CreateShaderResourceView(mAccelerateStruct->GetVertexBuffer()[0], &vertexsrvDesc, vertexsrvHandle);
+        srvHandle.ptr += mpDevice->GetDescriptorHandleIncrementSize(D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV);
+        D3D12_CPU_DESCRIPTOR_HANDLE vertexsrvHandle = srvHandle;
+        mpDevice->CreateShaderResourceView(mAccelerateStruct->GetVertexBuffer()[i], &vertexsrvDesc[i], vertexsrvHandle);
+    }
+
 }
 
 uint32_t CppDirectXRayTracing18::Application::beginFrame()
@@ -555,7 +371,6 @@ void CppDirectXRayTracing18::Application::onLoad(HWND winHandle, uint32_t winWid
 {
     InitDXR(winHandle, winWidth, winHeight); 
     CreateAccelerationStructures();
-    //testCreateAccelerationStructures();
     CreateRtPipelineState();
     createShaderResources();
     CreateShaderTable();

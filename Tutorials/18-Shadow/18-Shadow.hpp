@@ -20,13 +20,6 @@ namespace CppDirectXRayTracing18 {
         void InitDXR(HWND winHandle, uint32_t winWidth, uint32_t winHeight);
         void CreateAccelerationStructures();
 
-        void testCreateAccelerationStructures();
-        AccelerationStructureBuffers createTopLevelAS(ID3D12Device5Ptr pDevice, ID3D12GraphicsCommandList4Ptr pCmdList, ID3D12ResourcePtr pBottomLevelAS[2], uint64_t& tlasSize);
-        AccelerationStructureBuffers createBottomLevelAS(ID3D12Device5Ptr pDevice, ID3D12GraphicsCommandList4Ptr pCmdList, ID3D12ResourcePtr pVB[], const uint32_t vertexCount[], uint32_t geometryCount);
-        ID3D12ResourcePtr createPlaneVB(ID3D12Device5Ptr pDevice);
-        ID3D12ResourcePtr createTriangleVB(ID3D12Device5Ptr pDevice);
-
-
         void CreateRtPipelineState();
         void CreateShaderTable();
         void createShaderResources();
