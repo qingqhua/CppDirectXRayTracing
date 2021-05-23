@@ -5,7 +5,7 @@
 #include "../Primitives/Cube.hpp" 
 #include "../Primitives/Quad.hpp" 
 
-namespace CppDirectXRayTracing18
+namespace CppDirectXRayTracing19
 {
 	class D3D12AccelerationStructures
 	{

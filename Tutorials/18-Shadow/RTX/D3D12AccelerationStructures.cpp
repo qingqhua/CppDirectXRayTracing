@@ -2,7 +2,7 @@
 #include "D3D12AccelerationStructures.hpp"
 #include <iostream>
 
-ID3D12ResourcePtr CppDirectXRayTracing18::D3D12AccelerationStructures::createBuffer(ID3D12Device5Ptr pDevice, uint64_t size, D3D12_RESOURCE_FLAGS flags, D3D12_RESOURCE_STATES initState, const D3D12_HEAP_PROPERTIES& heapProps)
+ID3D12ResourcePtr CppDirectXRayTracing19::D3D12AccelerationStructures::createBuffer(ID3D12Device5Ptr pDevice, uint64_t size, D3D12_RESOURCE_FLAGS flags, D3D12_RESOURCE_STATES initState, const D3D12_HEAP_PROPERTIES& heapProps)
 {
     D3D12_RESOURCE_DESC bufDesc = {};
     bufDesc.Alignment = 0;
@@ -22,7 +22,7 @@ ID3D12ResourcePtr CppDirectXRayTracing18::D3D12AccelerationStructures::createBuf
     return pBuffer;
 }
 
-ID3D12ResourcePtr CppDirectXRayTracing18::D3D12AccelerationStructures::createCubeVB(ID3D12Device5Ptr pDevice)
+ID3D12ResourcePtr CppDirectXRayTracing19::D3D12AccelerationStructures::createCubeVB(ID3D12Device5Ptr pDevice)
 {
     // Vertex buffer
     int vertexCount = static_cast<int>(mCube.GetVertices().size());
@@ -38,7 +38,7 @@ ID3D12ResourcePtr CppDirectXRayTracing18::D3D12AccelerationStructures::createCub
     return vBuffer;
 }
 
-ID3D12ResourcePtr CppDirectXRayTracing18::D3D12AccelerationStructures::createCubeIB(ID3D12Device5Ptr pDevice)
+ID3D12ResourcePtr CppDirectXRayTracing19::D3D12AccelerationStructures::createCubeIB(ID3D12Device5Ptr pDevice)
 {
     int indexCount = static_cast<int>(mCube.GetIndices().size());
 
@@ -53,7 +53,7 @@ ID3D12ResourcePtr CppDirectXRayTracing18::D3D12AccelerationStructures::createCub
     return iBuffer;
 }
 
-ID3D12ResourcePtr CppDirectXRayTracing18::D3D12AccelerationStructures::CreateSphereVB(ID3D12Device5Ptr pDevice)
+ID3D12ResourcePtr CppDirectXRayTracing19::D3D12AccelerationStructures::CreateSphereVB(ID3D12Device5Ptr pDevice)
 {
     // Vertex buffer
     int vertexCount = static_cast<int>(mSphere.GetVertices().size());
@@ -69,7 +69,7 @@ ID3D12ResourcePtr CppDirectXRayTracing18::D3D12AccelerationStructures::CreateSph
     return vBuffer;
 }
 
-ID3D12ResourcePtr CppDirectXRayTracing18::D3D12AccelerationStructures::CreateSphereIB(ID3D12Device5Ptr pDevice)
+ID3D12ResourcePtr CppDirectXRayTracing19::D3D12AccelerationStructures::CreateSphereIB(ID3D12Device5Ptr pDevice)
 {
     int indexCount = static_cast<int>(mSphere.GetIndices().size());
 
@@ -84,7 +84,7 @@ ID3D12ResourcePtr CppDirectXRayTracing18::D3D12AccelerationStructures::CreateSph
     return iBuffer;
 }
 
-void CppDirectXRayTracing18::D3D12AccelerationStructures::CreateScenePrimitives(ID3D12Device5Ptr pDevice)
+void CppDirectXRayTracing19::D3D12AccelerationStructures::CreateScenePrimitives(ID3D12Device5Ptr pDevice)
 {
     mCube.Init(10.5f);
     mSphere.Init(1.0f, 32);
@@ -100,7 +100,7 @@ void CppDirectXRayTracing18::D3D12AccelerationStructures::CreateScenePrimitives(
     createCubeIB(pDevice);
 }
 
-CppDirectXRayTracing18::AccelerationStructureBuffers CppDirectXRayTracing18::D3D12AccelerationStructures::createBottomLevelAS(ID3D12Device5Ptr pDevice, ID3D12GraphicsCommandList4Ptr pCmdList, std::vector<ID3D12ResourcePtr> vBuffer, std::vector<ID3D12ResourcePtr> iBuffer, const std::vector<int> vertexCount, const std::vector<int> indexCount, int geometryCount)
+CppDirectXRayTracing19::AccelerationStructureBuffers CppDirectXRayTracing19::D3D12AccelerationStructures::createBottomLevelAS(ID3D12Device5Ptr pDevice, ID3D12GraphicsCommandList4Ptr pCmdList, std::vector<ID3D12ResourcePtr> vBuffer, std::vector<ID3D12ResourcePtr> iBuffer, const std::vector<int> vertexCount, const std::vector<int> indexCount, int geometryCount)
 {
     std::vector<D3D12_RAYTRACING_GEOMETRY_DESC> geomDesc;
     geomDesc.resize(geometryCount);
@@ -152,7 +152,7 @@ CppDirectXRayTracing18::AccelerationStructureBuffers CppDirectXRayTracing18::D3D
     return buffers;
 }
 
-CppDirectXRayTracing18::AccelerationStructureBuffers CppDirectXRayTracing18::D3D12AccelerationStructures::createTopLevelAS(ID3D12Device5Ptr pDevice, ID3D12GraphicsCommandList4Ptr pCmdList, ID3D12ResourcePtr pBottomLevelAS[], uint64_t& tlasSize)
+CppDirectXRayTracing19::AccelerationStructureBuffers CppDirectXRayTracing19::D3D12AccelerationStructures::createTopLevelAS(ID3D12Device5Ptr pDevice, ID3D12GraphicsCommandList4Ptr pCmdList, ID3D12ResourcePtr pBottomLevelAS[], uint64_t& tlasSize)
 {
     // First, get the size of the TLAS buffers and create them
     D3D12_BUILD_RAYTRACING_ACCELERATION_STRUCTURE_INPUTS inputs = {};
@@ -223,22 +223,22 @@ CppDirectXRayTracing18::AccelerationStructureBuffers CppDirectXRayTracing18::D3D
     return buffers;
 }
 
-std::vector<int> CppDirectXRayTracing18::D3D12AccelerationStructures::GetVertexCount()
+std::vector<int> CppDirectXRayTracing19::D3D12AccelerationStructures::GetVertexCount()
 {
     return mVertexCount;
 }
 
-std::vector<int> CppDirectXRayTracing18::D3D12AccelerationStructures::GetIndexCount()
+std::vector<int> CppDirectXRayTracing19::D3D12AccelerationStructures::GetIndexCount()
 {
     return mIndexCount;
 }
 
-std::vector<ID3D12ResourcePtr> CppDirectXRayTracing18::D3D12AccelerationStructures::GetIndexBuffer()
+std::vector<ID3D12ResourcePtr> CppDirectXRayTracing19::D3D12AccelerationStructures::GetIndexBuffer()
 {
     return mIndexBuffer;
 }
 
-std::vector<ID3D12ResourcePtr> CppDirectXRayTracing18::D3D12AccelerationStructures::GetVertexBuffer()
+std::vector<ID3D12ResourcePtr> CppDirectXRayTracing19::D3D12AccelerationStructures::GetVertexBuffer()
 {
     return mVertexBuffer;
 }

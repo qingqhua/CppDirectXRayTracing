@@ -2,7 +2,7 @@
 #include "Structs/DxilLibrary.hpp"
 #include "Structs/RootSignature.hpp"
 
-namespace CppDirectXRayTracing18
+namespace CppDirectXRayTracing19
 {
 	class D3D12RTPipeline
 	{

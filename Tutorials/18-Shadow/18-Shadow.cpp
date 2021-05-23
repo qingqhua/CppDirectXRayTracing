@@ -3,7 +3,7 @@
 
 #include <numeric>
 
-void CppDirectXRayTracing18::Application::InitDXR(HWND winHandle, uint32_t winWidth, uint32_t winHeight)
+void CppDirectXRayTracing19::Application::InitDXR(HWND winHandle, uint32_t winWidth, uint32_t winHeight)
 {
     mContext = std::make_unique<D3D12GraphicsContext>();
     mAccelerateStruct = std::make_unique<D3D12AccelerationStructures>();
@@ -53,7 +53,7 @@ void CppDirectXRayTracing18::Application::InitDXR(HWND winHandle, uint32_t winWi
 
 // The original tutorial use triangles (3 instances) and one plane.
 // Here we use the spheres to inplace triangles, the name is stay as in the original tutorial
-void CppDirectXRayTracing18::Application::CreateAccelerationStructures()
+void CppDirectXRayTracing19::Application::CreateAccelerationStructures()
 {
     // Create vertex buffer and index buffer of the scene.
     mAccelerateStruct->CreateScenePrimitives(mpDevice);
@@ -85,7 +85,7 @@ void CppDirectXRayTracing18::Application::CreateAccelerationStructures()
     
 }
 
-void CppDirectXRayTracing18::Application::CreateRtPipelineState()
+void CppDirectXRayTracing19::Application::CreateRtPipelineState()
 {
     // Need 16 subobjects:
      //  1 for DXIL library    
@@ -178,7 +178,7 @@ void CppDirectXRayTracing18::Application::CreateRtPipelineState()
     d3d_call(mpDevice->CreateStateObject(&desc, IID_PPV_ARGS(&mpPipelineState)));
 }
 
-void CppDirectXRayTracing18::Application::CreateShaderTable()
+void CppDirectXRayTracing19::Application::CreateShaderTable()
 {
     /** The shader-table layout is as follows:
         Entry 0 - Ray-gen program
@@ -264,7 +264,7 @@ void CppDirectXRayTracing18::Application::CreateShaderTable()
     mpShaderTable->Unmap(0, nullptr);
 }
 
-void CppDirectXRayTracing18::Application::createShaderResources()
+void CppDirectXRayTracing19::Application::createShaderResources()
 {
     // Create the output resource. The dimensions and format should match the swap-chain
     D3D12_RESOURCE_DESC resDesc = {};
@@ -335,7 +335,7 @@ void CppDirectXRayTracing18::Application::createShaderResources()
 
 }
 
-uint32_t CppDirectXRayTracing18::Application::beginFrame()
+uint32_t CppDirectXRayTracing19::Application::beginFrame()
 {
     // Bind the descriptor heaps
     ID3D12DescriptorHeap* heaps[] = { mpSrvUavHeap };
@@ -343,7 +343,7 @@ uint32_t CppDirectXRayTracing18::Application::beginFrame()
     return mpSwapChain->GetCurrentBackBufferIndex();
 }
 
-void CppDirectXRayTracing18::Application::endFrame(uint32_t rtvIndex)
+void CppDirectXRayTracing19::Application::endFrame(uint32_t rtvIndex)
 {
     mContext->resourceBarrier(mpCmdList, mFrameObjects[rtvIndex].pSwapChainBuffer, D3D12_RESOURCE_STATE_RENDER_TARGET, D3D12_RESOURCE_STATE_PRESENT);
     mFenceValue = mContext->submitCommandList(mpCmdList, mpCmdQueue, mpFence, mFenceValue);
@@ -367,7 +367,7 @@ void CppDirectXRayTracing18::Application::endFrame(uint32_t rtvIndex)
 //////////////////////////////////////////////////////////////////////////
 // Callbacks
 //////////////////////////////////////////////////////////////////////////
-void CppDirectXRayTracing18::Application::onLoad(HWND winHandle, uint32_t winWidth, uint32_t winHeight)
+void CppDirectXRayTracing19::Application::onLoad(HWND winHandle, uint32_t winWidth, uint32_t winHeight)
 {
     InitDXR(winHandle, winWidth, winHeight); 
     CreateAccelerationStructures();
@@ -376,7 +376,7 @@ void CppDirectXRayTracing18::Application::onLoad(HWND winHandle, uint32_t winWid
     CreateShaderTable();
 }
 
-void CppDirectXRayTracing18::Application::onFrameRender()
+void CppDirectXRayTracing19::Application::onFrameRender()
 {
     uint32_t rtvIndex = beginFrame();
 
@@ -418,7 +418,7 @@ void CppDirectXRayTracing18::Application::onFrameRender()
     endFrame(rtvIndex);
 }
 
-void CppDirectXRayTracing18::Application::onShutdown()
+void CppDirectXRayTracing19::Application::onShutdown()
 {
     // Wait for the command queue to finish execution
     mFenceValue++;
@@ -429,5 +429,5 @@ void CppDirectXRayTracing18::Application::onShutdown()
 
 int WINAPI WinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstance, _In_ LPSTR lpCmdLine, _In_ int nShowCmd)
 {
-    Framework::run(CppDirectXRayTracing18::Application(), "Tutorial 18");
+    Framework::run(CppDirectXRayTracing19::Application(), "Tutorial 18");
 }

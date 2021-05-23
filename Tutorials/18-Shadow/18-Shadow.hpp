@@ -9,7 +9,7 @@
 #include "RTX/Structs/ShaderConfig.hpp"
 #include "RTX/Structs/PipelineConfig.hpp"
 
-namespace CppDirectXRayTracing18 {
+namespace CppDirectXRayTracing19 {
     class Application : public Tutorial
     {
     public:

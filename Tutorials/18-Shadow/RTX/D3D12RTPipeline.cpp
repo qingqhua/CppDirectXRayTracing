@@ -12,7 +12,7 @@
     MAKE_SMART_COM_PTR(IDxcOperationResult);
 #endif // DXC
 
-ID3DBlobPtr CppDirectXRayTracing18::D3D12RTPipeline::compileLibrary(const WCHAR* filename, const WCHAR* targetString)
+ID3DBlobPtr CppDirectXRayTracing19::D3D12RTPipeline::compileLibrary(const WCHAR* filename, const WCHAR* targetString)
 {
     // Initialize the helper
     d3d_call(gDxcDllHelper.Initialize());
@@ -58,7 +58,7 @@ ID3DBlobPtr CppDirectXRayTracing18::D3D12RTPipeline::compileLibrary(const WCHAR*
     return pBlob;
 }
 
-CppDirectXRayTracing18::RootSignatureDesc CppDirectXRayTracing18::D3D12RTPipeline::createRayGenRootDesc()
+CppDirectXRayTracing19::RootSignatureDesc CppDirectXRayTracing19::D3D12RTPipeline::createRayGenRootDesc()
 {
     // Create the root-signature
     RootSignatureDesc desc;
@@ -90,7 +90,7 @@ CppDirectXRayTracing18::RootSignatureDesc CppDirectXRayTracing18::D3D12RTPipelin
     return desc;
 }
 
-CppDirectXRayTracing18::RootSignatureDesc CppDirectXRayTracing18::D3D12RTPipeline::createTriangleHitRootDesc()
+CppDirectXRayTracing19::RootSignatureDesc CppDirectXRayTracing19::D3D12RTPipeline::createTriangleHitRootDesc()
 {
     RootSignatureDesc desc;
     desc.range.resize(3);
@@ -131,7 +131,7 @@ CppDirectXRayTracing18::RootSignatureDesc CppDirectXRayTracing18::D3D12RTPipelin
     return desc;
 }
 
-CppDirectXRayTracing18::RootSignatureDesc CppDirectXRayTracing18::D3D12RTPipeline::createPlaneHitRootDesc()
+CppDirectXRayTracing19::RootSignatureDesc CppDirectXRayTracing19::D3D12RTPipeline::createPlaneHitRootDesc()
 {
     RootSignatureDesc desc;
     desc.range.resize(1);
@@ -153,7 +153,7 @@ CppDirectXRayTracing18::RootSignatureDesc CppDirectXRayTracing18::D3D12RTPipelin
     return desc;
 }
 
-CppDirectXRayTracing18::DxilLibrary CppDirectXRayTracing18::D3D12RTPipeline::createDxilLibrary()
+CppDirectXRayTracing19::DxilLibrary CppDirectXRayTracing19::D3D12RTPipeline::createDxilLibrary()
 {
     // Compile the shader
     ID3DBlobPtr pDxilLib = compileLibrary(L"Data/Shaders-18.hlsl", L"lib_6_3");

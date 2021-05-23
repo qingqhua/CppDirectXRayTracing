@@ -135,6 +135,7 @@ StructuredBuffer<Vertex> Vertices : register(t2);
 struct RayPayload
 {
 	float4 color;
+	uint recursionDepth;
 };
 
 struct ShadowPayload
@@ -226,7 +227,7 @@ void triangleChs(inout RayPayload payload, in BuiltInTriangleIntersectionAttribu
 
 	// Calculate final color.
 	float4 diffuseColor = (InstanceID() == 0) ? groundAlbedo : primitiveAlbedo;
-	float4 phongColor = CalculatePhongLighting(diffuseColor, hitNormal, false, diffuseCoef, specularCoef, specularPower);
+	float4 phongColor = CalculatePhongLighting(diffuseColor, hitNormal, shadowPayload.hit, diffuseCoef, specularCoef, specularPower);
 	float4 color = phongColor;
 
 	float t = RayTCurrent();
@@ -255,8 +256,28 @@ void planeChs(inout RayPayload payload, in BuiltInTriangleIntersectionAttributes
     ShadowPayload shadowPayload;
     TraceRay(gRtScene, 0  /*rayFlags*/, 0xFF, 1 /* ray index*/, 0, 1, ray, shadowPayload);
 
+	// Lighting of the objects.
+	float3 hitPosition = HitWorldPosition();
+
+
+	// Retrieve corresponding vertex normals for the triangle vertices.
+	float3 vertexNormals[3] = {
+		float3(0,1,0),
+		float3(0,1,0),
+		float3(0,1,0)
+	};
+
+	//float3 hitNormal = (InstanceID() == 0) ? float3(0, 1, 0) : HitAttribute(vertexNormals, attribs);
+	float3 hitNormal = HitAttribute(vertexNormals, attribs);
+	// Calculate final color.
+	float4 diffuseColor = primitiveAlbedo;
+	float4 phongColor = CalculatePhongLighting(diffuseColor, hitNormal, shadowPayload.hit, diffuseCoef, specularCoef, specularPower);
+	float4 color = phongColor;
+	float t = RayTCurrent();
+	color = lerp(color, backgroundColor, 1.0 - exp(-0.000002 * t * t * t));
+
     float factor = shadowPayload.hit ? 0.1 : 1.0;
-    payload.color = float4(0.9f, 0.9f, 0.9f, 1.0f) * factor;
+    payload.color = color * factor;
 }
 
 // Hit shadow
