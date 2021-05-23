@@ -6,13 +6,15 @@
 
 static const float4 primitiveAlbedo = float4(0.8, 0.0, 0.0, 1.0);
 static const float4 groundAlbedo = float4(1.0, 1.0, 1.0, 1.0);
-static const float InShadowRadiance = 0.35f;
 
+
+/*
+ static const float InShadowRadiance = 0.35f;
 static const float diffuseCoef = 0.9;
 static const float specularCoef = 0.7;
 static const float specularPower = 50;
 static const float reflectanceCoef = 0.9;
-
+*/
 cbuffer SceneCB : register(b0)
 {
 	float4x4 projectionToWorld		: packoffset(c0);
@@ -24,7 +26,7 @@ cbuffer SceneCB : register(b0)
 	float4 lightDiffuseColor		: packoffset(c8);
 };
 
-/*
+
 cbuffer PrimitiveCB : register(b1)
 {
 	float4 diffuseColor		: packoffset(c0);
@@ -34,7 +36,7 @@ cbuffer PrimitiveCB : register(b1)
 	float specularPower		: packoffset(c1.w);
 	float reflectanceCoef	: packoffset(c2.x);
 }
-*/
+
 // Pack vertex buffer to shader
 struct Vertex
 {
@@ -238,7 +240,7 @@ void chs(inout RayPayload payload, in BuiltInTriangleIntersectionAttributes attr
 	float3 hitNormal = (InstanceID() == 0) ? float3(0, 1, 0) : HitAttribute(vertexNormals, attribs);
 
 	float4 color;
-	float4 diffuseColor = (InstanceID() == 0) ? groundAlbedo : primitiveAlbedo;
+	//float4 diffuseColor = (InstanceID() == 0) ? groundAlbedo : primitiveAlbedo;
 	if (payload.recursionDepth < MaxRecursionDepth)
 	{
 		// Shadow

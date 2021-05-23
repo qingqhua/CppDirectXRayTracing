@@ -26,7 +26,8 @@ namespace CppDirectXRayTracing20 {
         void CreateShaderResources();
 
         void CreateGeometryBuffers(D3D12_CPU_DESCRIPTOR_HANDLE& srvHandle);
-        void CreateConstantBuffers(D3D12_CPU_DESCRIPTOR_HANDLE& srvHandle);
+        void CreateSceneConstantBuffers(D3D12_CPU_DESCRIPTOR_HANDLE& srvHandle);
+        void CreatePrimitiveConstantBuffers();
 
         uint32_t beginFrame();
         void endFrame(uint32_t rtvIndex);

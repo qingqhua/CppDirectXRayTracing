@@ -168,7 +168,7 @@ void CppDirectXRayTracing20::Application::CreateShaderTable()
     mShaderTableEntrySize = D3D12_SHADER_IDENTIFIER_SIZE_IN_BYTES;
     mShaderTableEntrySize += 8; // The ray-gen's descriptor table
     mShaderTableEntrySize = align_to(D3D12_RAYTRACING_SHADER_RECORD_BYTE_ALIGNMENT, mShaderTableEntrySize);
-    uint32_t shaderTableSize = mShaderTableEntrySize * 5;
+    uint32_t shaderTableSize = mShaderTableEntrySize * (3+4);
 
     // For simplicity, we create the shader-table on the upload heap. You can also create it on the default heap
     mpShaderTable = mAccelerateStruct->createBuffer(mpDevice, shaderTableSize, D3D12_RESOURCE_FLAG_NONE, D3D12_RESOURCE_STATE_GENERIC_READ, kUploadHeapProps);
@@ -192,19 +192,35 @@ void CppDirectXRayTracing20::Application::CreateShaderTable()
     memcpy(pData + mShaderTableEntrySize*2, pRtsoProps->GetShaderIdentifier(mRtpipe->kShadowMiss), D3D12_SHADER_IDENTIFIER_SIZE_IN_BYTES);
 
     // Entry 3-5 - hit program
-    uint8_t* pHitEntry = pData + mShaderTableEntrySize * 3; // +3 skips the ray-gen and 2 miss entries
-    memcpy(pHitEntry, pRtsoProps->GetShaderIdentifier(mRtpipe->kHitGroup), D3D12_SHADER_IDENTIFIER_SIZE_IN_BYTES);
-    heapStart = mpSrvUavHeap->GetGPUDescriptorHandleForHeapStart().ptr;
-    *(uint64_t*)(pHitEntry + D3D12_SHADER_IDENTIFIER_SIZE_IN_BYTES) = heapStart;
-/*
+    //uint8_t* pHitEntry = pData + mShaderTableEntrySize * 3; // +3 skips the ray-gen and 2 miss entries
+    //memcpy(pHitEntry, pRtsoProps->GetShaderIdentifier(mRtpipe->kHitGroup), D3D12_SHADER_IDENTIFIER_SIZE_IN_BYTES);
+   // heapStart = mpSrvUavHeap->GetGPUDescriptorHandleForHeapStart().ptr;
+    //*(uint64_t*)(pHitEntry + D3D12_SHADER_IDENTIFIER_SIZE_IN_BYTES) = heapStart;
+    /*
     for (uint32_t i = 0; i < kInstancesNum; i++)
     {
         uint8_t* pHitEntry = pData + mShaderTableEntrySize * (i + 3); 
         memcpy(pHitEntry, pRtsoProps->GetShaderIdentifier(mRtpipe->kHitGroup), D3D12_SHADER_IDENTIFIER_SIZE_IN_BYTES);
-        uint8_t* pCbDesc = pHitEntry + D3D12_SHADER_IDENTIFIER_SIZE_IN_BYTES;            // The location of the root-descriptor
-        *(D3D12_GPU_VIRTUAL_ADDRESS*)pCbDesc = mPrimitiveCB[i]->GetGPUVirtualAddress();
+
+         heapStart = mpSrvUavHeap->GetGPUDescriptorHandleForHeapStart().ptr;
+        *(uint64_t*)(pHitEntry + D3D12_SHADER_IDENTIFIER_SIZE_IN_BYTES) = heapStart;
+
+        * (uint64_t*)(pHitEntry + D3D12_SHADER_IDENTIFIER_SIZE_IN_BYTES*2) = mPrimitiveCB[i]->GetGPUVirtualAddress();
     }
     */
+    pData += mShaderTableEntrySize * 2;
+    for (uint32_t i = 0; i < kDefaultNumDesc; i++)
+    {
+        pData += mShaderTableEntrySize; 
+        memcpy(pData, pRtsoProps->GetShaderIdentifier(mRtpipe->kHitGroup), D3D12_SHADER_IDENTIFIER_SIZE_IN_BYTES);
+
+        heapStart = mpSrvUavHeap->GetGPUDescriptorHandleForHeapStart().ptr;
+        *(uint64_t*)(pData + D3D12_SHADER_IDENTIFIER_SIZE_IN_BYTES) = heapStart;
+
+        uint8_t* pCbDesc = pData + D3D12_SHADER_IDENTIFIER_SIZE_IN_BYTES + sizeof(uint64_t);
+        assert(((uint64_t)pCbDesc % 8) == 0); // Root descriptor must be stored at an 8-byte aligned address
+        *(D3D12_GPU_VIRTUAL_ADDRESS*)pCbDesc = mPrimitiveCB[2]->GetGPUVirtualAddress();
+    }
 
     // Unmap
     mpShaderTable->Unmap(0, nullptr);
@@ -239,7 +255,7 @@ void CppDirectXRayTracing20::Application::CreateGeometryBuffers(D3D12_CPU_DESCRI
     mpDevice->CreateShaderResourceView(mAccelerateStruct->GetSphereVertexBuffer(), &vertexsrvDesc, vertexsrvHandle);
 }
 
-void CppDirectXRayTracing20::Application::CreateConstantBuffers(D3D12_CPU_DESCRIPTOR_HANDLE& srvHandle)
+void CppDirectXRayTracing20::Application::CreateSceneConstantBuffers(D3D12_CPU_DESCRIPTOR_HANDLE& srvHandle)
 {
     SceneCB scenecb;
     {
@@ -265,8 +281,10 @@ void CppDirectXRayTracing20::Application::CreateConstantBuffers(D3D12_CPU_DESCRI
     srvHandle.ptr += mpDevice->GetDescriptorHandleIncrementSize(D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV);
     D3D12_CPU_DESCRIPTOR_HANDLE scenecbsrvHandle = srvHandle;
     mpDevice->CreateConstantBufferView(&scenecbsrvDesc, scenecbsrvHandle);
+}
 
-    /*
+void CppDirectXRayTracing20::Application::CreatePrimitiveConstantBuffers()
+{
     // Primitive buffer per instance
     PrimitiveCB pcb[kInstancesNum];
     {
@@ -279,7 +297,7 @@ void CppDirectXRayTracing20::Application::CreateConstantBuffers(D3D12_CPU_DESCRI
     }
 
     {
-        pcb[1].diffuseColor = glm::vec4(0.9f, 0.9f, 0.9f, 1.0f);
+        pcb[1].diffuseColor = glm::vec4(0.9f, 0.9f, 0.0f, 1.0f);
         pcb[1].inShadowRadiance = 0.35f;
         pcb[1].diffuseCoef = 0.9f;
         pcb[1].specularCoef = 0.7f;
@@ -288,7 +306,7 @@ void CppDirectXRayTracing20::Application::CreateConstantBuffers(D3D12_CPU_DESCRI
     }
 
     {
-        pcb[2].diffuseColor = glm::vec4(0.9f, 0.9f, 0.9f, 1.0f);
+        pcb[2].diffuseColor = glm::vec4(0.0f, 0.9f, 0.9f, 1.0f);
         pcb[2].inShadowRadiance = 0.35f;
         pcb[2].diffuseCoef = 0.9f;
         pcb[2].specularCoef = 0.7f;
@@ -297,7 +315,7 @@ void CppDirectXRayTracing20::Application::CreateConstantBuffers(D3D12_CPU_DESCRI
     }
 
     {
-        pcb[3].diffuseColor = glm::vec4(0.9f, 0.9f, 0.9f, 1.0f);
+        pcb[3].diffuseColor = glm::vec4(0.9f, 0.0f, 0.9f, 1.0f);
         pcb[3].inShadowRadiance = 0.35f;
         pcb[3].diffuseCoef = 0.9f;
         pcb[3].specularCoef = 0.7f;
@@ -305,7 +323,7 @@ void CppDirectXRayTracing20::Application::CreateConstantBuffers(D3D12_CPU_DESCRI
         pcb[3].reflectanceCoef = 0.7f;
     }
 
-    for (int i = 0; i < kInstancesNum; i++) 
+    for (int i = 0; i < kInstancesNum; i++)
     {
         const uint32_t bufferSize = sizeof(PrimitiveCB);
         mPrimitiveCB[i] = mAccelerateStruct->createBuffer(mpDevice, bufferSize, D3D12_RESOURCE_FLAG_NONE, D3D12_RESOURCE_STATE_GENERIC_READ, kUploadHeapProps);
@@ -314,8 +332,6 @@ void CppDirectXRayTracing20::Application::CreateConstantBuffers(D3D12_CPU_DESCRI
         memcpy(pData, &pcb[i], sizeof(pcb));
         mPrimitiveCB[i]->Unmap(0, nullptr);
     }
-    */
-
 }
 
 void CppDirectXRayTracing20::Application::CreateShaderResources()
@@ -355,7 +371,7 @@ void CppDirectXRayTracing20::Application::CreateShaderResources()
     CreateGeometryBuffers(srvHandle);
 
     // Create primitive cb and scene cb
-    CreateConstantBuffers(srvHandle);
+    CreateSceneConstantBuffers(srvHandle);
 }
 
 uint32_t CppDirectXRayTracing20::Application::beginFrame()
@@ -393,9 +409,18 @@ void CppDirectXRayTracing20::Application::endFrame(uint32_t rtvIndex)
 void CppDirectXRayTracing20::Application::onLoad(HWND winHandle, uint32_t winWidth, uint32_t winHeight)
 {
     InitDXR(winHandle, winWidth, winHeight); 
+
+    // Create geometry bottom/top level structure.
     CreateAccelerationStructures();
+
+    // Create pipeline
     CreateRtPipelineState();
+
+    // Create shader buffers
     CreateShaderResources();
+
+    CreatePrimitiveConstantBuffers();
+
     CreateShaderTable();
 }
 

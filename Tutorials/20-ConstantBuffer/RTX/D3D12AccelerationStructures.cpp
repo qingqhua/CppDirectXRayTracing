@@ -195,7 +195,7 @@ CppDirectXRayTracing20::AccelerationStructureBuffers CppDirectXRayTracing20::D3D
     for (int i = 1; i < kInstancesNum; i++)
     {
         pInstanceDesc[i].InstanceID = i;                            // This value will be exposed to the shader via InstanceID()
-        pInstanceDesc[i].InstanceContributionToHitGroupIndex = 0;   // This is the offset inside the shader-table. Since we have unique constant-buffer for each instance, we need a different offset
+        pInstanceDesc[i].InstanceContributionToHitGroupIndex = i;   // This is the offset inside the shader-table. Since we have unique constant-buffer for each instance, we need a different offset
         pInstanceDesc[i].Flags = D3D12_RAYTRACING_INSTANCE_FLAG_NONE;
         mat4 m = transpose(transformation[i]);
         memcpy(pInstanceDesc[i].Transform, &m, sizeof(pInstanceDesc[i].Transform));

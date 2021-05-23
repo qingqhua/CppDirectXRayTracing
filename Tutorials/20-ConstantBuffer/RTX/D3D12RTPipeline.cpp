@@ -131,14 +131,20 @@ CppDirectXRayTracing20::RootSignatureDesc CppDirectXRayTracing20::D3D12RTPipelin
     desc.range[3].OffsetInDescriptorsFromTableStart = 4;
 
     // Create desc
-    desc.rootParams.resize(1);
+    desc.rootParams.resize(2);
     desc.rootParams[0].ParameterType = D3D12_ROOT_PARAMETER_TYPE_DESCRIPTOR_TABLE;
-    //desc.rootParams[0].Descriptor.RegisterSpace = 0;
-    //desc.rootParams[0].Descriptor.ShaderRegister = 0;
+    desc.rootParams[0].Descriptor.RegisterSpace = 0;
+    desc.rootParams[0].Descriptor.ShaderRegister = 0;
     desc.rootParams[0].DescriptorTable.NumDescriptorRanges = 4;
     desc.rootParams[0].DescriptorTable.pDescriptorRanges = desc.range.data();
 
-    desc.desc.NumParameters = 1;
+    // Constant Buffer register
+    desc.rootParams[1].ParameterType = D3D12_ROOT_PARAMETER_TYPE_CBV;
+    desc.rootParams[1].Descriptor.RegisterSpace = 0;
+    desc.rootParams[1].Descriptor.ShaderRegister = 1;
+
+
+    desc.desc.NumParameters = 2;
     desc.desc.pParameters = desc.rootParams.data();
     desc.desc.Flags = D3D12_ROOT_SIGNATURE_FLAG_LOCAL_ROOT_SIGNATURE;
 
