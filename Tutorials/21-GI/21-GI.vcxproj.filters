@@ -1,0 +1,95 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <ClCompile Include="RTX\D3D12AccelerationStructures.cpp">
+      <Filter>RTX</Filter>
+    </ClCompile>
+    <ClCompile Include="RTX\D3D12GraphicsContext.cpp">
+      <Filter>RTX</Filter>
+    </ClCompile>
+    <ClCompile Include="RTX\D3D12RTPipeline.cpp">
+      <Filter>RTX</Filter>
+    </ClCompile>
+    <ClCompile Include="Primitives\Cube.cpp">
+      <Filter>Primitives</Filter>
+    </ClCompile>
+    <ClCompile Include="Primitives\Quad.cpp">
+      <Filter>Primitives</Filter>
+    </ClCompile>
+    <ClCompile Include="Primitives\Sphere.cpp">
+      <Filter>Primitives</Filter>
+    </ClCompile>
+    <ClCompile Include="21-GI.cpp" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="RTX\Structs\DxilLibrary.hpp">
+      <Filter>RTX\Structs</Filter>
+    </ClInclude>
+    <ClInclude Include="RTX\Structs\ExportAssociation.hpp">
+      <Filter>RTX\Structs</Filter>
+    </ClInclude>
+    <ClInclude Include="RTX\Structs\FrameObject.hpp">
+      <Filter>RTX\Structs</Filter>
+    </ClInclude>
+    <ClInclude Include="RTX\Structs\HeapData.hpp">
+      <Filter>RTX\Structs</Filter>
+    </ClInclude>
+    <ClInclude Include="RTX\Structs\HitProgram.hpp">
+      <Filter>RTX\Structs</Filter>
+    </ClInclude>
+    <ClInclude Include="RTX\Structs\PipelineConfig.hpp">
+      <Filter>RTX\Structs</Filter>
+    </ClInclude>
+    <ClInclude Include="RTX\D3D12AccelerationStructures.hpp">
+      <Filter>RTX</Filter>
+    </ClInclude>
+    <ClInclude Include="RTX\D3D12GraphicsContext.hpp">
+      <Filter>RTX</Filter>
+    </ClInclude>
+    <ClInclude Include="RTX\D3D12RTPipeline.hpp">
+      <Filter>RTX</Filter>
+    </ClInclude>
+    <ClInclude Include="RTX\Structs\AccelerationStructureBuffer.hpp">
+      <Filter>RTX\Structs</Filter>
+    </ClInclude>
+    <ClInclude Include="RTX\Structs\RootSignature.hpp">
+      <Filter>RTX\Structs</Filter>
+    </ClInclude>
+    <ClInclude Include="RTX\Structs\ShaderConfig.hpp">
+      <Filter>RTX\Structs</Filter>
+    </ClInclude>
+    <ClInclude Include="Primitives\Vertex.hpp">
+      <Filter>Primitives</Filter>
+    </ClInclude>
+    <ClInclude Include="Primitives\Cube.hpp">
+      <Filter>Primitives</Filter>
+    </ClInclude>
+    <ClInclude Include="Primitives\Quad.hpp">
+      <Filter>Primitives</Filter>
+    </ClInclude>
+    <ClInclude Include="Primitives\Sphere.hpp">
+      <Filter>Primitives</Filter>
+    </ClInclude>
+    <ClInclude Include="RTX\Structs\PrimitiveCB.hpp">
+      <Filter>RTX\Structs</Filter>
+    </ClInclude>
+    <ClInclude Include="RTX\Structs\SceneCB.hpp">
+      <Filter>RTX\Structs</Filter>
+    </ClInclude>
+    <ClInclude Include="21-GI.hpp" />
+  </ItemGroup>
+  <ItemGroup>
+    <Filter Include="RTX">
+      <UniqueIdentifier>{043c5f7c-a90b-4fbf-b4cc-b731b23459a4}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="RTX\Structs">
+      <UniqueIdentifier>{7c5c13cc-991c-4ec5-be40-93de13fadf87}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Primitives">
+      <UniqueIdentifier>{930e7507-e2e4-4c70-96bd-bce12162fa32}</UniqueIdentifier>
+    </Filter>
+  </ItemGroup>
+  <ItemGroup>
+    <FxCompile Include="Data\Shaders.hlsl" />
+  </ItemGroup>
+</Project>
