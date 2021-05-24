@@ -46,6 +46,13 @@ struct Vertex
 	float2 TexCoord;
 };
 
+RaytracingAccelerationStructure gRtScene : register(t0);
+RWTexture2D<float4> gOutput : register(u0);
+ByteAddressBuffer Indices : register(t1);
+StructuredBuffer<Vertex> Vertices : register(t2);
+
+
+
 float4 linearToSrgb(float4 c)
 {
 	// Based on http://chilliant.blogspot.com/2012/08/srgb-approximations-for-hlsl.html
@@ -152,10 +159,7 @@ uint3 Load3x16BitIndices(ByteAddressBuffer Indices, uint offsetBytes)
 //----------------------------
 // Real shader calculation
 //--------------------------------------
-RaytracingAccelerationStructure gRtScene : register(t0);
-RWTexture2D<float4> gOutput : register(u0);
-ByteAddressBuffer Indices : register(t1);
-StructuredBuffer<Vertex> Vertices : register(t2);
+
 
 
 struct RayPayload
@@ -253,7 +257,7 @@ void chs(inout RayPayload payload, in BuiltInTriangleIntersectionAttributes attr
 		TraceRay(gRtScene,
 			0  /*rayFlags*/,
 			0xFF,
-			1 /* ray index*/,
+			4 /* ray index*/,
 			0 /* Multiplies */,
 			1 /* Miss index (shadow) */,
 			shadowRay,

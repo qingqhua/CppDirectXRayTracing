@@ -158,7 +158,7 @@ void CppDirectXRayTracing20::Application::CreateShaderTable()
         Entry 1 - Miss program
         Entry 2 - Hit program
         Entry 3 - Hit program
-        Entry 4 - Hit program
+
         All entries in the shader-table must have the same size, so we will choose it base on the largest required entry.
         The ray-gen program requires the largest entry - sizeof(program identifier) + 8 bytes for a descriptor-table.
         The entry size must be aligned up to D3D12_RAYTRACING_SHADER_RECORD_BYTE_ALIGNMENT
@@ -168,7 +168,9 @@ void CppDirectXRayTracing20::Application::CreateShaderTable()
     mShaderTableEntrySize = D3D12_SHADER_IDENTIFIER_SIZE_IN_BYTES;
     mShaderTableEntrySize += 8; // The ray-gen's descriptor table
     mShaderTableEntrySize = align_to(D3D12_RAYTRACING_SHADER_RECORD_BYTE_ALIGNMENT, mShaderTableEntrySize);
-    uint32_t shaderTableSize = mShaderTableEntrySize * (3+4);
+
+    // It is enough to set (3+1) for now, if geometry increases, the size need to be increased as well.
+    uint32_t shaderTableSize = mShaderTableEntrySize * (3 + 1); 
 
     // For simplicity, we create the shader-table on the upload heap. You can also create it on the default heap
     mpShaderTable = mAccelerateStruct->createBuffer(mpDevice, shaderTableSize, D3D12_RESOURCE_FLAG_NONE, D3D12_RESOURCE_STATE_GENERIC_READ, kUploadHeapProps);
@@ -187,29 +189,14 @@ void CppDirectXRayTracing20::Application::CreateShaderTable()
     *(uint64_t*)(pData + D3D12_SHADER_IDENTIFIER_SIZE_IN_BYTES) = heapStart;
 
     // Entry 1 - miss program
-    memcpy(pData + mShaderTableEntrySize, pRtsoProps->GetShaderIdentifier(mRtpipe->kMissShader), D3D12_SHADER_IDENTIFIER_SIZE_IN_BYTES);
+    pData += mShaderTableEntrySize;
+    memcpy(pData, pRtsoProps->GetShaderIdentifier(mRtpipe->kMissShader), D3D12_SHADER_IDENTIFIER_SIZE_IN_BYTES);
     // Entry 2 - miss program
-    memcpy(pData + mShaderTableEntrySize*2, pRtsoProps->GetShaderIdentifier(mRtpipe->kShadowMiss), D3D12_SHADER_IDENTIFIER_SIZE_IN_BYTES);
+    pData += mShaderTableEntrySize;
+    memcpy(pData, pRtsoProps->GetShaderIdentifier(mRtpipe->kShadowMiss), D3D12_SHADER_IDENTIFIER_SIZE_IN_BYTES);
 
-    // Entry 3-5 - hit program
-    //uint8_t* pHitEntry = pData + mShaderTableEntrySize * 3; // +3 skips the ray-gen and 2 miss entries
-    //memcpy(pHitEntry, pRtsoProps->GetShaderIdentifier(mRtpipe->kHitGroup), D3D12_SHADER_IDENTIFIER_SIZE_IN_BYTES);
-   // heapStart = mpSrvUavHeap->GetGPUDescriptorHandleForHeapStart().ptr;
-    //*(uint64_t*)(pHitEntry + D3D12_SHADER_IDENTIFIER_SIZE_IN_BYTES) = heapStart;
-    /*
+    // Entry 3-? hit program
     for (uint32_t i = 0; i < kInstancesNum; i++)
-    {
-        uint8_t* pHitEntry = pData + mShaderTableEntrySize * (i + 3); 
-        memcpy(pHitEntry, pRtsoProps->GetShaderIdentifier(mRtpipe->kHitGroup), D3D12_SHADER_IDENTIFIER_SIZE_IN_BYTES);
-
-         heapStart = mpSrvUavHeap->GetGPUDescriptorHandleForHeapStart().ptr;
-        *(uint64_t*)(pHitEntry + D3D12_SHADER_IDENTIFIER_SIZE_IN_BYTES) = heapStart;
-
-        * (uint64_t*)(pHitEntry + D3D12_SHADER_IDENTIFIER_SIZE_IN_BYTES*2) = mPrimitiveCB[i]->GetGPUVirtualAddress();
-    }
-    */
-    pData += mShaderTableEntrySize * 2;
-    for (uint32_t i = 0; i < kDefaultNumDesc; i++)
     {
         pData += mShaderTableEntrySize; 
         memcpy(pData, pRtsoProps->GetShaderIdentifier(mRtpipe->kHitGroup), D3D12_SHADER_IDENTIFIER_SIZE_IN_BYTES);
@@ -218,8 +205,8 @@ void CppDirectXRayTracing20::Application::CreateShaderTable()
         *(uint64_t*)(pData + D3D12_SHADER_IDENTIFIER_SIZE_IN_BYTES) = heapStart;
 
         uint8_t* pCbDesc = pData + D3D12_SHADER_IDENTIFIER_SIZE_IN_BYTES + sizeof(uint64_t);
-        assert(((uint64_t)pCbDesc % 8) == 0); // Root descriptor must be stored at an 8-byte aligned address
-        *(D3D12_GPU_VIRTUAL_ADDRESS*)pCbDesc = mPrimitiveCB[2]->GetGPUVirtualAddress();
+        //assert(((uint64_t)pCbDesc % 8) == 0); // Root descriptor must be stored at an 8-byte aligned address
+        *(D3D12_GPU_VIRTUAL_ADDRESS*)pCbDesc = mPrimitiveCB[i]->GetGPUVirtualAddress();
     }
 
     // Unmap
@@ -445,11 +432,11 @@ void CppDirectXRayTracing20::Application::onFrameRender()
     raytraceDesc.MissShaderTable.StrideInBytes = mShaderTableEntrySize;
     raytraceDesc.MissShaderTable.SizeInBytes = mShaderTableEntrySize * 2;   // Only a s single miss-entry
 
-    // Hit is the third entry in the shader-table
+    // Hit is the fourth entry in the shader-table
     size_t hitOffset = 3 * mShaderTableEntrySize;
     raytraceDesc.HitGroupTable.StartAddress = mpShaderTable->GetGPUVirtualAddress() + hitOffset;
     raytraceDesc.HitGroupTable.StrideInBytes = mShaderTableEntrySize;
-    raytraceDesc.HitGroupTable.SizeInBytes = mShaderTableEntrySize;
+    raytraceDesc.HitGroupTable.SizeInBytes = mShaderTableEntrySize * kInstancesNum;
 
     // Bind the empty root signature
     mpCmdList->SetComputeRootSignature(mpEmptyRootSig);
