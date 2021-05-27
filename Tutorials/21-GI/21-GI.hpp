@@ -29,6 +29,8 @@ namespace CppDirectXRayTracing21 {
         void CreateSceneConstantBuffers(D3D12_CPU_DESCRIPTOR_HANDLE& srvHandle);
         void CreatePrimitiveConstantBuffers();
 
+        void UpdateConstantBuffers();
+
         uint32_t beginFrame();
         void endFrame(uint32_t rtvIndex);
 
@@ -73,6 +75,8 @@ namespace CppDirectXRayTracing21 {
         // Constant BUffers
         ID3D12ResourcePtr mSceneCB;
         ID3D12ResourcePtr mPrimitiveCB[kInstancesNum];
+
+        SceneCB mScenecbData;
     };
 }
 

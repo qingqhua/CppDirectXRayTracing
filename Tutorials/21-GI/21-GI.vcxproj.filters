@@ -92,4 +92,7 @@
   <ItemGroup>
     <FxCompile Include="Data\Shaders.hlsl" />
   </ItemGroup>
+  <ItemGroup>
+    <None Include="Data\Helpers.hlsli" />
+  </ItemGroup>
 </Project>

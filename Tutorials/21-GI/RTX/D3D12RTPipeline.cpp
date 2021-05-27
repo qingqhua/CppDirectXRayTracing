@@ -8,6 +8,7 @@
     static dxc::DxcDllSupport gDxcDllHelper;
     MAKE_SMART_COM_PTR(IDxcCompiler);
     MAKE_SMART_COM_PTR(IDxcLibrary);
+    MAKE_SMART_COM_PTR(IDxcIncludeHandler);
     MAKE_SMART_COM_PTR(IDxcBlobEncoding);
     MAKE_SMART_COM_PTR(IDxcOperationResult);
 #endif // DXC
@@ -18,6 +19,7 @@ ID3DBlobPtr CppDirectXRayTracing21::D3D12RTPipeline::compileLibrary(const WCHAR*
     d3d_call(gDxcDllHelper.Initialize());
     IDxcCompilerPtr pCompiler;
     IDxcLibraryPtr pLibrary;
+    IDxcIncludeHandlerPtr pInclude;
     d3d_call(gDxcDllHelper.CreateInstance(CLSID_DxcCompiler, &pCompiler));
     d3d_call(gDxcDllHelper.CreateInstance(CLSID_DxcLibrary, &pLibrary));
 
@@ -36,9 +38,12 @@ ID3DBlobPtr CppDirectXRayTracing21::D3D12RTPipeline::compileLibrary(const WCHAR*
     IDxcBlobEncodingPtr pTextBlob;
     d3d_call(pLibrary->CreateBlobWithEncodingFromPinned((LPBYTE)shader.c_str(), (uint32_t)shader.size(), 0, &pTextBlob));
 
+    // Include header
+    d3d_call(pLibrary->CreateIncludeHandler(&pInclude));
+
     // Compile
     IDxcOperationResultPtr pResult;
-    d3d_call(pCompiler->Compile(pTextBlob, filename, L"", targetString, nullptr, 0, nullptr, 0, nullptr, &pResult));
+    d3d_call(pCompiler->Compile(pTextBlob, filename, L"", targetString, nullptr, 0, nullptr, 0, pInclude, &pResult));
 
     // Verify the result
     HRESULT resultCode;

@@ -51,6 +51,9 @@
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">true</ExcludedFromBuild>
     </FxCompile>
   </ItemGroup>
+  <ItemGroup>
+    <None Include="Data\Helpers.hlsli" />
+  </ItemGroup>
   <PropertyGroup Label="Globals">
     <ProjectGuid>{FB7314A5-2F67-4C14-9197-C3DA85D2A539}</ProjectGuid>
     <Keyword>Win32Proj</Keyword>

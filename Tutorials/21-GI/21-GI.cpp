@@ -125,7 +125,7 @@ void CppDirectXRayTracing21::Application::CreateRtPipelineState()
     subobjects[index++] = missRootAssociation.subobject; // 7 Associate Miss Root Sig to Miss Shader
 
     // Bind the payload size to the programs
-    ShaderConfig shaderConfig(sizeof(float) * 2, sizeof(float) * (4+1));
+    ShaderConfig shaderConfig(sizeof(float) * 2, sizeof(float) * (4+2));
     subobjects[index] = shaderConfig.subobject; // 8 Shader Config
 
     uint32_t shaderConfigIndex = index++; // 8
@@ -244,21 +244,22 @@ void CppDirectXRayTracing21::Application::CreateGeometryBuffers(D3D12_CPU_DESCRI
 
 void CppDirectXRayTracing21::Application::CreateSceneConstantBuffers(D3D12_CPU_DESCRIPTOR_HANDLE& srvHandle)
 {
-    SceneCB scenecb;
+
     {
-        scenecb.projectionToWorld = glm::mat4(); //todo
-        scenecb.cameraPosition = glm::vec3(0, 0, -7);
-        scenecb.lightPosition = glm::vec3(2.0, 2.0, -2.0);
-        scenecb.lightDiffuseColor = glm::vec4(0.5f, 0.5f, 0.5f, 1.0f);
-        scenecb.lightAmbientColor = glm::vec4(0.1f, 0.1f, 0.1f, 1.0f);
-        scenecb.backgroundColor = glm::vec4(0.2f, 0.21f, 0.9f, 1.0f);
-        scenecb.MaxRecursionDepth = kMaxTraceRecursionDepth - 2;
+        mScenecbData.projectionToWorld = glm::mat4(); //todo
+        mScenecbData.cameraPosition = glm::vec3(0, 0, -7);
+        mScenecbData.lightPosition = glm::vec3(2.0, 2.0, -2.0);
+        mScenecbData.lightDiffuseColor = glm::vec4(0.5f, 0.5f, 0.5f, 1.0f);
+        mScenecbData.lightAmbientColor = glm::vec4(1.0f, 1.0f, 1.0f, 1.0f);
+        mScenecbData.backgroundColor = glm::vec4(0.2f, 0.21f, 0.9f, 1.0f);
+        mScenecbData.MaxRecursionDepth = kMaxTraceRecursionDepth - 2;
+        mScenecbData.frameindex = 0.0f;
     }
 
     mSceneCB = mAccelerateStruct->createBuffer(mpDevice, sizeof(SceneCB), D3D12_RESOURCE_FLAG_NONE, D3D12_RESOURCE_STATE_GENERIC_READ, kUploadHeapProps);
     uint8_t* pData;
     d3d_call(mSceneCB->Map(0, nullptr, (void**)&pData));
-    memcpy(pData, &scenecb, sizeof(scenecb));
+    memcpy(pData, &mScenecbData, sizeof(mScenecbData));
     mSceneCB->Unmap(0, nullptr);
 
     D3D12_CONSTANT_BUFFER_VIEW_DESC scenecbsrvDesc = {};
@@ -319,6 +320,16 @@ void CppDirectXRayTracing21::Application::CreatePrimitiveConstantBuffers()
         memcpy(pData, &pcb[i], sizeof(pcb));
         mPrimitiveCB[i]->Unmap(0, nullptr);
     }
+}
+
+void CppDirectXRayTracing21::Application::UpdateConstantBuffers()
+{
+    mScenecbData.frameindex += 1.0f;
+
+    uint8_t* pData;
+    d3d_call(mSceneCB->Map(0, nullptr, (void**)&pData));
+    memcpy(pData, &mScenecbData, sizeof(mScenecbData));
+    mSceneCB->Unmap(0, nullptr);
 }
 
 void CppDirectXRayTracing21::Application::CreateShaderResources()
@@ -414,6 +425,8 @@ void CppDirectXRayTracing21::Application::onLoad(HWND winHandle, uint32_t winWid
 void CppDirectXRayTracing21::Application::onFrameRender()
 {
     uint32_t rtvIndex = beginFrame();
+
+    UpdateConstantBuffers();
 
     // Let's raytrace
     mContext->resourceBarrier(mpCmdList, mpOutputResource, D3D12_RESOURCE_STATE_COPY_SOURCE, D3D12_RESOURCE_STATE_UNORDERED_ACCESS);
