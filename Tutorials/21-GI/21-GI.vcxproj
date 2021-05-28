@@ -52,7 +52,11 @@
     </FxCompile>
   </ItemGroup>
   <ItemGroup>
+    <None Include="Data\GGX.hlsli" />
     <None Include="Data\Helpers.hlsli" />
+    <None Include="Data\Lambertian.hlsli">
+      <DeploymentContent Condition="'$(Configuration)|$(Platform)'=='Release|x64'">true</DeploymentContent>
+    </None>
   </ItemGroup>
   <PropertyGroup Label="Globals">
     <ProjectGuid>{FB7314A5-2F67-4C14-9197-C3DA85D2A539}</ProjectGuid>

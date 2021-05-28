@@ -178,7 +178,7 @@ CppDirectXRayTracing21::AccelerationStructureBuffers CppDirectXRayTracing21::D3D
     mat4 transformation[kInstancesNum];
     transformation[0] = glm::translate(glm::mat4(1.0), glm::vec3(0.0f, -0.5f, 0.0f)); // Identity
     transformation[1] = translate(mat4(), vec3(0, 0.0, 0));
-    transformation[2] = translate(mat4(), vec3(-2, 0.0, -3));
+    transformation[2] = translate(mat4(), vec3(0.7, 0.0, -3));
     transformation[3] = translate(mat4(), vec3(2, 0.0, -3));
 
     // Plane

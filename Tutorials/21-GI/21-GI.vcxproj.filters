@@ -88,11 +88,24 @@
     <Filter Include="Primitives">
       <UniqueIdentifier>{930e7507-e2e4-4c70-96bd-bce12162fa32}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Data">
+      <UniqueIdentifier>{a6c8ed77-df0e-4b25-82a8-ad18f8520bdb}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
-    <FxCompile Include="Data\Shaders.hlsl" />
+    <None Include="Data\GGX.hlsli">
+      <Filter>Data</Filter>
+    </None>
+    <None Include="Data\Helpers.hlsli">
+      <Filter>Data</Filter>
+    </None>
+    <None Include="Data\Lambertian.hlsli">
+      <Filter>Data</Filter>
+    </None>
   </ItemGroup>
   <ItemGroup>
-    <None Include="Data\Helpers.hlsli" />
+    <FxCompile Include="Data\Shaders.hlsl">
+      <Filter>Data</Filter>
+    </FxCompile>
   </ItemGroup>
 </Project>

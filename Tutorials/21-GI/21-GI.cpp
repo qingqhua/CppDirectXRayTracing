@@ -246,12 +246,10 @@ void CppDirectXRayTracing21::Application::CreateSceneConstantBuffers(D3D12_CPU_D
 {
 
     {
-        mScenecbData.projectionToWorld = glm::mat4(); //todo
         mScenecbData.cameraPosition = glm::vec3(0, 0, -7);
-        mScenecbData.lightPosition = glm::vec3(2.0, 2.0, -2.0);
-        mScenecbData.lightDiffuseColor = glm::vec4(0.5f, 0.5f, 0.5f, 1.0f);
-        mScenecbData.lightAmbientColor = glm::vec4(1.0f, 1.0f, 1.0f, 1.0f);
-        mScenecbData.backgroundColor = glm::vec4(0.2f, 0.21f, 0.9f, 1.0f);
+        mScenecbData.lightPosition = glm::vec4(0.0, 2.0, -5.0,1.0f);
+        mScenecbData.lightIntensity = glm::vec4(1.0f, 1.0f, 1.0f, 1.0f);
+        mScenecbData.backgroundColor = glm::vec3(0.2f, 0.21f, 0.9f);
         mScenecbData.MaxRecursionDepth = kMaxTraceRecursionDepth - 2;
         mScenecbData.frameindex = 0.0f;
     }
@@ -276,39 +274,27 @@ void CppDirectXRayTracing21::Application::CreatePrimitiveConstantBuffers()
     // Primitive buffer per instance
     PrimitiveCB pcb[kInstancesNum];
     {
-        pcb[0].diffuseColor = glm::vec4(0.9f, 0.9f, 0.9f, 1.0f);
-        pcb[0].inShadowRadiance = 0.35f;
-        pcb[0].diffuseCoef = 0.9f;
-        pcb[0].specularCoef = 0.7f;
-        pcb[0].specularPower = 50;
-        pcb[0].reflectanceCoef = 0.7f;
+        pcb[0].matDiffuse = glm::vec3(1.0f, 1.0f, 1.0f);
+        pcb[0].matRoughness = 0.1f;
+        pcb[0].matSpecular = glm::vec3(0.9f, 0.9f, 0.9f);
     }
 
     {
-        pcb[1].diffuseColor = glm::vec4(0.9f, 0.9f, 0.0f, 1.0f);
-        pcb[1].inShadowRadiance = 0.35f;
-        pcb[1].diffuseCoef = 0.9f;
-        pcb[1].specularCoef = 0.7f;
-        pcb[1].specularPower = 50;
-        pcb[1].reflectanceCoef = 0.7f;
+        pcb[1].matDiffuse = glm::vec3(0.3f, 0.9f, 0.9f);
+        pcb[1].matRoughness = 0.1f;
+        pcb[1].matSpecular = glm::vec3(0.9f, 0.9f, 0.4f);
     }
 
     {
-        pcb[2].diffuseColor = glm::vec4(0.0f, 0.9f, 0.9f, 1.0f);
-        pcb[2].inShadowRadiance = 0.35f;
-        pcb[2].diffuseCoef = 0.9f;
-        pcb[2].specularCoef = 0.7f;
-        pcb[2].specularPower = 50;
-        pcb[2].reflectanceCoef = 0.7f;
+        pcb[2].matDiffuse = glm::vec3(0.0f, 0.9f, 0.0f);
+        pcb[2].matRoughness = 1.0f;
+        pcb[2].matSpecular = glm::vec3(0.6f, 0.2f, 0.9f);
     }
 
     {
-        pcb[3].diffuseColor = glm::vec4(0.9f, 0.0f, 0.9f, 1.0f);
-        pcb[3].inShadowRadiance = 0.35f;
-        pcb[3].diffuseCoef = 0.9f;
-        pcb[3].specularCoef = 0.7f;
-        pcb[3].specularPower = 50;
-        pcb[3].reflectanceCoef = 0.7f;
+        pcb[3].matDiffuse = glm::vec3(0.9f, 0.0f, 0.0f);
+        pcb[3].matRoughness = 0.1f;
+        pcb[3].matSpecular = glm::vec3(0.9f, 0.9f, 0.9f);
     }
 
     for (int i = 0; i < kInstancesNum; i++)
@@ -326,6 +312,12 @@ void CppDirectXRayTracing21::Application::UpdateConstantBuffers()
 {
     mScenecbData.frameindex += 1.0f;
 
+    // Rotate Light
+    float speed = 0.01f;
+    mat4 rotationMat = glm::rotate(mat4(1), speed, vec3(0, 1, 0));
+    //mScenecbData.lightPosition = glm::vec4(rotationMat * mScenecbData.lightPosition);
+    
+    // Rewrite scene buffer.
     uint8_t* pData;
     d3d_call(mSceneCB->Map(0, nullptr, (void**)&pData));
     memcpy(pData, &mScenecbData, sizeof(mScenecbData));

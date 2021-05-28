@@ -1,5 +1,5 @@
-#include "Helpers.hlsli"
-
+#include "GGX.hlsli"
+#include "Lambertian.hlsli"
 
 [shader("raygeneration")]
 void rayGen()
@@ -13,6 +13,9 @@ void rayGen()
     float2 d = ((crd/dims) * 2.f - 1.f);
     float aspectRatio = dims.x / dims.y;
 
+	// Initialize random seed based on pixel and frame for random sample
+	uint random_seed = initRand(DispatchRaysIndex().x * frameindex, DispatchRaysIndex().y * frameindex, 16);
+
     RayDesc ray;
     ray.Origin = cameraPosition;
     ray.Direction = normalize(float3(d.x * aspectRatio, -d.y, 1));
@@ -22,23 +25,25 @@ void rayGen()
 
     RayPayload payload;
 	payload.recursionDepth = 0;
-    TraceRay( gRtScene,
-        0 /*rayFlags*/,
-        0xFF, 
-        0 /* ray index*/,
-        0/* Multiplies */,
-        0/* Miss index */,
-        ray,
-        payload );
+	payload.seed = random_seed;
+	TraceRay(gRtScene,
+		0 /*rayFlags*/,
+		0xFF,
+		0 /* ray index*/,
+		0/* Multiplies */,
+		0/* Miss index */,
+		ray,
+		payload);
 
-    float4 col = 
-    gOutput[launchIndex.xy] = linearToSrgb(payload.color);
+	// The final output of each pixel.
+    gOutput[launchIndex.xy] = payload.color;
 }
 
 [shader("miss")]
 void miss(inout RayPayload payload)
 {
-	payload.color = backgroundColor;
+	//payload.color = float4(backgroundColor, 1.0f);
+	payload.color = float4(0,0,0, 1.0f);
 }
 
 float3 HitAttribute(float3 vertexAttribute[3], BuiltInTriangleIntersectionAttributes attr)
@@ -51,8 +56,9 @@ float3 HitAttribute(float3 vertexAttribute[3], BuiltInTriangleIntersectionAttrib
 [shader("closesthit")]
 void chs(inout RayPayload payload, in BuiltInTriangleIntersectionAttributes attribs)
 {
-	uint random_seed = initRand(DispatchRaysIndex().x * frameindex, DispatchRaysIndex().y * frameindex, 16);
-
+	//-----------------------
+	// Get geometry attribute
+	//-----------------------
 	float3 hitPosition = HitWorldPosition();
 
 	// Get the base index of the triangle's first 16 bit index.
@@ -70,76 +76,28 @@ void chs(inout RayPayload payload, in BuiltInTriangleIntersectionAttributes attr
 		Vertices[indices[1]].Normal,
 		Vertices[indices[2]].Normal
 	};
-
 	float3 hitNormal = (InstanceID() == 0) ? float3(0, 1, 0) : HitAttribute(vertexNormals, attribs);
 
-	float4 color;
-
+	float3 view_dir = normalize(cameraPosition - hitPosition);
+	
 	// Direct lighting
-	color = float4(DiffuseShade(hitPosition, hitNormal, diffuseColor, random_seed), 1.0f);
-	payload.seed = random_seed;
-	payload.recursionDepth++;
-
+	//float3 color = LambertianDirect(hitPosition, hitNormal, matDiffuse, payload.seed);
+	float3 color = ggxDirect(payload.seed, hitPosition, lightPosition, lightIntensity, hitNormal, view_dir, matDiffuse, matSpecular, matRoughness);
+	//float3 color = float3(0, 0, 0);
 	// Indirect lighting
 	if (payload.recursionDepth < MaxRecursionDepth)
 	{
-		float3 dir = CosineWeightedHemisphereSample(payload.seed, hitNormal);
-		float3 indirectcolor = ShootIndirectRay(hitPosition, dir, 0.001f, 100000.0f, payload.seed, payload.recursionDepth);
-		float4 direct = float4(DiffuseShade(hitPosition, hitNormal, diffuseColor, payload.seed), 1.0f);
+		// GGX
+		float3 indirect = ggxIndirect(payload.seed, hitPosition, lightPosition, lightIntensity, hitNormal, view_dir, matDiffuse, matSpecular, matRoughness, payload.recursionDepth);
 
-		color += diffuseColor * float4(indirectcolor, 1.0f);
+		// Lambertian
+		//float3 indirect = LambertianIndirect(hitPosition, hitNormal, matDiffuse, payload.seed, payload.recursionDepth);
+
+		color += indirect;
+		payload.recursionDepth++;
 	}
-	//	// Shadow
-	//	RayDesc shadowRay;
-	//	shadowRay.Origin = hitPosition;
-	//	shadowRay.Direction = normalize(lightPosition - shadowRay.Origin);
-	//	shadowRay.TMin = 0.01;
-	//	shadowRay.TMax = 100000;
-	//	ShadowPayload shadowPayload;
-	//	TraceRay(gRtScene,
-	//		0  /*rayFlags*/,
-	//		0xFF,
-	//		4 /* ray index*/,
-	//		0 /* Multiplies */,
-	//		1 /* Miss index (shadow) */,
-	//		shadowRay,
-	//		shadowPayload);
-
-	//	// Reflection    
-	//	RayDesc reflectionRay;
-	//	reflectionRay.Origin = hitPosition;
-	//	reflectionRay.Direction = reflect(WorldRayDirection(), hitNormal);
-	//	reflectionRay.TMin = 0.01;
-	//	reflectionRay.TMax = 100000;
-	//	RayPayload reflectionPayload;
-	//	reflectionPayload.recursionDepth = payload.recursionDepth + 1;
-	//	TraceRay(gRtScene,
-	//		0  /*rayFlags*/,
-	//		0xFF,
-	//		0 /* ray index*/,
-	//		0 /* Multiplies */,
-	//		0 /* Miss index (raytrace) */,
-	//		reflectionRay,
-	//		reflectionPayload);
-	//	float4 reflectionColor = reflectionPayload.color;
-
-	//	float3 fresnelR = FresnelReflectanceSchlick(WorldRayDirection(), hitNormal, diffuseColor);
-	//	float4 reflectedColor = reflectanceCoef * float4(fresnelR, 1) * reflectionColor;
-
-	//	// Calculate final color.
-	//	float4 phongColor = CalculatePhongLighting(diffuseColor, hitNormal, shadowPayload.hit, diffuseCoef, specularCoef, specularPower);
-	//	color = phongColor + reflectedColor;
-	//}
-	//else
-	//{
-	//	color = CalculatePhongLighting(diffuseColor, hitNormal, false, diffuseCoef, specularCoef, specularPower);
-	//}
-
-	// Apply visibility falloff.
-	float t = RayTCurrent();
-	//color = lerp(color, backgroundColor, 1.0 - exp(-0.000002 * t * t * t));
-
-	payload.color = color;
+	
+	payload.color = float4(color, 1.0f);
 }
 
 [shader("miss")]
