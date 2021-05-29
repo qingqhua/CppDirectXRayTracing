@@ -37,15 +37,19 @@ How to pass multiply geometry in to shader. This one combined the geometry into 
 ![](https://github.com/qingqhua/CppDirectXRayTracing/blob/main/images/tutorial17.PNG?raw=true)  
 
 ### Tutorial 17-2
-The second way for passing multiple geometry. Bind them into different BLAS.
+The second way for passing multiple geometry.  
+The spheres are sent by index buffer and vertex buffer, the normals of the plane are tricky, specified in shader.   
 ![](https://github.com/qingqhua/CppDirectXRayTracing/blob/main/images/tutorial17-2.PNG?raw=true)
 
 ### Tutorial 18
-How to cast shadow ray. Also instances of the spheres are binded to TLAS.
+How to cast shadow ray and third way for passing multiple geometry. This is the same approach as Nvidia tutorial.  
+Bind primitive to different BLAS, each of the primitive has its own closest shader. Also instances of the spheres are binded to TLAS.  
+The aliasing of the shadow is potentially a bug in this way of sending geometry.  
 ![](https://github.com/qingqhua/CppDirectXRayTracing/blob/main/images/tutorial18.PNG?raw=true)
 
 ### Tutorial 19
-Reflections with Phong lighting. 
+Reflections with Phong lighting. Shoot the reflection rays. Also see shaders in [CSharpDirectXRaytracing](https://github.com/Jorgemagic/CSharpDirectXRaytracing/tree/master/18-Reflection/Data)  
+From now on, we stick to the second way of sending the geometry, which works best.  
 ![](https://github.com/qingqhua/CppDirectXRayTracing/blob/main/images/tutorial19.PNG?raw=true)
 
 ### Tutorial 20
@@ -54,9 +58,9 @@ Set scene constant buffer and primitive constant buffer. This is useful for sett
 
 ### Tutorial 21
 How to do full global illumination in DXR. This tutorial implemented naive recursive ray tracer with Lambertian and GGX model. This sub-project is packaged as an win64-exe in [release](https://github.com/qingqhua/CppDirectXRayTracing/releases)   
-Use keyboard 1 to switch between Lambertian GI and AO with direct lighting.  
-Use keyboard 2 to open GGX shading.  
-Use keyboard 3 to open dynamic lighting.  
+Use keyboard number 1 to switch between Lambertian GI and AO with direct lighting.  
+Use keyboard number 2 to open GGX shading.  
+Use keyboard number 3 to open dynamic lighting.  
 #### Lambertian GI:
 ![Lambertian GI](https://github.com/qingqhua/CppDirectXRayTracing/blob/main/images/tutorial21-lambdertian.PNG?raw=true)  
 #### GGX GI:
@@ -73,5 +77,5 @@ You are very welcomed to submit issues, extend the tutorial (e.g. better GI solu
 
 ## Resources
 The [Nvidia tutorial](https://github.com/NVIDIAGameWorks/DxrTutorials) has a code walk through document, make sure to check it.  
-[SIGGRAPH 2018 Course](http://intro-to-dxr.cwyman.org/) Good explanation of integrate the shader for global illumination.  
+[SIGGRAPH 2018 Course](http://intro-to-dxr.cwyman.org/) Good explanation of how to integrate the shader for global illumination.  
 [Ray Tracing in One Weekend](https://raytracing.github.io/) The basic theory of GI. The first among the series introduced the basics of ray tracing, the third among the series introduces the Monte Carlo strategy.
