@@ -1,7 +1,7 @@
 # CppDirectXRayTracing
 DirectX Raytracing Tutorials in C++
 
-The main references of this tutorial are [CSharpDirectXRaytracing](https://github.com/Jorgemagic/CSharpDirectXRaytracing) and [Nvidia tutorial](https://github.com/NVIDIAGameWorks/DxrTutorials) If not mentioned in the code, the tutorials from 01-07 are reconstructed from [Nvidia tutorial](https://github.com/NVIDIAGameWorks/DxrTutorials), the 15-19 are ported from [CSharpDirectXRaytracing](https://github.com/Jorgemagic/CSharpDirectXRaytracing). Part of the shader code in GI is modified from [SIGGRAPH 2018 Course](http://intro-to-dxr.cwyman.org/). All of those are awesome and useful resources to read. 
+The main references of this tutorial are [CSharpDirectXRaytracing](https://github.com/Jorgemagic/CSharpDirectXRaytracing) and [Nvidia tutorial](https://github.com/NVIDIAGameWorks/DxrTutorials). If not mentioned in the code, the tutorials from 01-07 are reconstructed from [Nvidia tutorial](https://github.com/NVIDIAGameWorks/DxrTutorials), the 15-19 are ported from [CSharpDirectXRaytracing](https://github.com/Jorgemagic/CSharpDirectXRaytracing). Part of the shader code in GI is modified from [SIGGRAPH 2018 Course](http://intro-to-dxr.cwyman.org/). All of those are awesome and useful resources to read. 
  
 The tutorial is served as the reconstruction and extension work of the Nvidia tutorial. The refactoring of the code is aiming at a eaiser understanding of DXR, and easier for the learners to extend. Unlike Falcor, the code doesn't has abstraction on the CPU host side.  
 
