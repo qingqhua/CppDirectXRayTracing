@@ -10,7 +10,7 @@ The GI solution is packaged in [release](https://github.com/qingqhua/CppDirectXR
 ## Environment 
 Windows SDK 10.0.18362.0  
 Visual Studio 2019  
-GTX 1070 GPU Card (You can find if you graphics card supports DXR [here](https://linuxhint.com/nvidia-cards-support-ray-tracing/))  
+GTX 1070 GPU Card (You can find if your graphics card supports DXR [here](https://linuxhint.com/nvidia-cards-support-ray-tracing/))  
 
 ## Tutorials
 The image shot of each sub-project, the projects can easily be run by clicking *CppDirectXRayTracing.sln*. Note the 7-14 is blank just because the tutorials diverged from the original nv turotials and I was too lazy to rename them.
