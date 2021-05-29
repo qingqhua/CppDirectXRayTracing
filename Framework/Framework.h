@@ -46,8 +46,6 @@
 #include <vector>
 #include <array>
 
-using namespace glm;
-
 // Common DX12 definitions
 #define MAKE_SMART_COM_PTR(_a) _COM_SMARTPTR_TYPEDEF(_a, __uuidof(_a))
 MAKE_SMART_COM_PTR(ID3D12Device5);
@@ -66,6 +64,8 @@ MAKE_SMART_COM_PTR(ID3D12RootSignature);
 MAKE_SMART_COM_PTR(ID3DBlob);
 MAKE_SMART_COM_PTR(IDxcBlobEncoding);
 
+using namespace glm;
+
 // Interface for the tutorials
 class Tutorial
 {
@@ -74,6 +74,10 @@ public:
     virtual void onLoad(HWND winHandle, uint32_t winWidth, uint32_t winHeight) = 0;  // Called when the tutorial loads
     virtual void onFrameRender() = 0;         // Called each frame
     virtual void onShutdown() = 0;            // Called when the application shutsdown, before the window is closing
+
+    bool ggxShadingMode = false;
+    bool dynamicLighting = false;
+    bool aoSamples = false;
 };
 
 class Framework
@@ -82,11 +86,10 @@ public:
     static void run(Tutorial& tutorial, const std::string& winTitle, uint32_t width = 1920, uint32_t height = 1200);
 };
 
-//static const uint32_t kDefaultSwapChainBuffers = 3;
-
 #define d3d_call(a) {HRESULT hr_ = a; if(FAILED(hr_)) { d3dTraceHR( #a, hr_); }}
 #define arraysize(a) (sizeof(a)/sizeof(a[0]))
 #define align_to(_alignment, _val) (((_val + _alignment - 1) / _alignment) * _alignment)
+
 
 // Display a message-box
 void msgBox(const std::string& msg);

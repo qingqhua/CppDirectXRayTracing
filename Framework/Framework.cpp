@@ -32,6 +32,9 @@
 namespace
 {
     HWND gWinHandle = nullptr;
+    bool ggxMode = false;
+    bool dynamicLighting = false;
+    bool aoSamples = false;
 
     static LRESULT CALLBACK msgProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
     {
@@ -46,6 +49,34 @@ namespace
         case WM_KEYDOWN:
             if (wParam == VK_ESCAPE) PostQuitMessage(0);
             return 0;
+        case WM_CHAR:
+            // Key-board 1: switch between ao diffuse and Lambertian full gi.
+            // Key-board 2: switch wo ggx full gi.
+            // Key-board 3: open and close dynamic lighting.
+            // Switch between ggx and Lambertian full GI.
+            if (wParam == 0x32) // key-board 2
+            {
+                ggxMode = !ggxMode;
+                if (aoSamples) // if ao is opned, close it.
+                    aoSamples = false;
+            }
+                
+            // Open and close dynamic lighting
+            if (wParam == 0x33) // key-board 3
+                dynamicLighting = !dynamicLighting;
+
+            // Switch on ao with Lambertian Direct.
+            if (wParam == 0x31) // key-board 1
+            {
+                aoSamples = !aoSamples;
+                ggxMode = false;
+            }
+                
+
+            return 0;
+
+            // Send all other WM_SYSKEYDOWN messages to the default WndProc.
+            break;
         default:
             return DefWindowProc(hwnd, msg, wParam, lParam);
         }
@@ -104,6 +135,10 @@ namespace
             }
             else
             {
+                // Update control parameter
+                tutorial.ggxShadingMode = ggxMode;
+                tutorial.aoSamples = aoSamples;
+                tutorial.dynamicLighting = dynamicLighting;
                 tutorial.onFrameRender();
             }
         }

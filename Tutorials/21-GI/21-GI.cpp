@@ -252,6 +252,8 @@ void CppDirectXRayTracing21::Application::CreateSceneConstantBuffers(D3D12_CPU_D
         mScenecbData.backgroundColor = glm::vec3(0.2f, 0.21f, 0.9f);
         mScenecbData.MaxRecursionDepth = kMaxTraceRecursionDepth - 2;
         mScenecbData.frameindex = 0.0f;
+        mScenecbData.ggxshadingMode = false;
+        mScenecbData.aoSamples = 0;
     }
 
     mSceneCB = mAccelerateStruct->createBuffer(mpDevice, sizeof(SceneCB), D3D12_RESOURCE_FLAG_NONE, D3D12_RESOURCE_STATE_GENERIC_READ, kUploadHeapProps);
@@ -315,7 +317,28 @@ void CppDirectXRayTracing21::Application::UpdateConstantBuffers()
     // Rotate Light
     float speed = 0.01f;
     mat4 rotationMat = glm::rotate(mat4(1), speed, vec3(0, 1, 0));
-    //mScenecbData.lightPosition = glm::vec4(rotationMat * mScenecbData.lightPosition);
+    if (dynamicLighting == true)
+    {
+        vec4 light = glm::vec4(rotationMat * vec4(mScenecbData.lightPosition, 1.0f));
+        mScenecbData.lightPosition = vec3(light.x, light.y, light.z);
+    }
+        
+    // Switch on AO with direct lighting.
+    if (aoSamples ==true)
+    {
+        mScenecbData.aoSamples = 8;
+        mScenecbData.ggxshadingMode = false;
+    }
+    else 
+    {
+        mScenecbData.aoSamples = 0;
+    }
+
+    // Update control by keyboard
+    if (ggxShadingMode == true) 
+        mScenecbData.ggxshadingMode = true;
+    else
+        mScenecbData.ggxshadingMode = false;
     
     // Rewrite scene buffer.
     uint8_t* pData;
@@ -413,6 +436,7 @@ void CppDirectXRayTracing21::Application::onLoad(HWND winHandle, uint32_t winWid
 
     CreateShaderTable();
 }
+
 
 void CppDirectXRayTracing21::Application::onFrameRender()
 {

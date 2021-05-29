@@ -9,7 +9,6 @@
 static float M_PI = 3.1415f;
 static float gt_min = 0.01f;
 static float gt_max = 1000.0f;
-static uint gao_samples = 0;
 
 struct RayPayload
 {
@@ -37,8 +36,10 @@ cbuffer SceneCB : register(b0)
     float  MaxRecursionDepth        : packoffset(c0.w);
     float3 cameraPosition			: packoffset(c1);
     float frameindex                : packoffset(c1.w);
-    float4 lightPosition			: packoffset(c2);
-    float4 lightIntensity		    : packoffset(c3);
+    float3 lightPosition			: packoffset(c2);
+    uint aoSamples                  : packoffset(c2.w);
+    float3 lightIntensity		    : packoffset(c3);
+    bool ggxshadingMode             : packoffset(c3.w);
 };
 
 cbuffer PrimitiveCB : register(b1)

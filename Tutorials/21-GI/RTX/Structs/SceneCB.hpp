@@ -18,7 +18,10 @@ namespace CppDirectXRayTracing21
         float frameindex;
 
         // Light
-        glm::vec4 lightPosition;
-        glm::vec4 lightIntensity;
+        glm::vec3 lightPosition;
+        uint aoSamples;
+        glm::vec3 lightIntensity;
+
+        bool ggxshadingMode;
     };
 };

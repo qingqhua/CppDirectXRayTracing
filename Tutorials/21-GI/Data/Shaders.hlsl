@@ -42,8 +42,8 @@ void rayGen()
 [shader("miss")]
 void miss(inout RayPayload payload)
 {
-	//payload.color = float4(backgroundColor, 1.0f);
-	payload.color = float4(0,0,0, 1.0f);
+	payload.color = float4(backgroundColor, 1.0f);
+	//payload.color = float4(0,0,0, 1.0f);
 }
 
 float3 HitAttribute(float3 vertexAttribute[3], BuiltInTriangleIntersectionAttributes attr)
@@ -80,22 +80,43 @@ void chs(inout RayPayload payload, in BuiltInTriangleIntersectionAttributes attr
 
 	float3 view_dir = normalize(cameraPosition - hitPosition);
 	
-	// Direct lighting
-	//float3 color = LambertianDirect(hitPosition, hitNormal, matDiffuse, payload.seed);
-	float3 color = ggxDirect(payload.seed, hitPosition, lightPosition, lightIntensity, hitNormal, view_dir, matDiffuse, matSpecular, matRoughness);
-	//float3 color = float3(0, 0, 0);
-	// Indirect lighting
-	if (payload.recursionDepth < MaxRecursionDepth)
-	{
-		// GGX
-		float3 indirect = ggxIndirect(payload.seed, hitPosition, lightPosition, lightIntensity, hitNormal, view_dir, matDiffuse, matSpecular, matRoughness, payload.recursionDepth);
-
-		// Lambertian
-		//float3 indirect = LambertianIndirect(hitPosition, hitNormal, matDiffuse, payload.seed, payload.recursionDepth);
-
-		color += indirect;
-		payload.recursionDepth++;
+	float3 color = float3(0, 0, 0);
+	 
+	// Lambertian with ao
+	if(aoSamples>0)
+	{ 
+		color = LambertianDirect(hitPosition, hitNormal, matDiffuse, payload.seed);
 	}
+	else // full GI
+	{
+		// Direct lighting
+		if (ggxshadingMode)
+		{
+			color = ggxDirect(payload.seed, hitPosition, lightPosition, lightIntensity, hitNormal, view_dir, matDiffuse, matSpecular, matRoughness);
+		}
+		else {
+			color = LambertianDirect(hitPosition, hitNormal, matDiffuse, payload.seed);
+		}
+
+		// Indirect lighting
+		if (payload.recursionDepth < MaxRecursionDepth)
+		{
+			float3 indirect = float3(0, 0, 0);
+			// GGX
+			if (ggxshadingMode)
+			{
+				indirect = ggxIndirect(payload.seed, hitPosition, lightPosition, lightIntensity, hitNormal, view_dir, matDiffuse, matSpecular, matRoughness, payload.recursionDepth);
+			}
+			else {
+				// Lambertian
+				indirect = LambertianIndirect(hitPosition, hitNormal, matDiffuse, payload.seed, payload.recursionDepth);
+			}
+
+			color += indirect;
+			payload.recursionDepth++;
+		}
+	}
+	
 	
 	payload.color = float4(color, 1.0f);
 }
