@@ -15,14 +15,6 @@
     </Filter>
   </ItemGroup>
   <ItemGroup>
-    <FxCompile Include="Data\Shaders.hlsl">
-      <Filter>Data</Filter>
-    </FxCompile>
-    <FxCompile Include="Data\Helper.hlsl">
-      <Filter>Data</Filter>
-    </FxCompile>
-  </ItemGroup>
-  <ItemGroup>
     <ClCompile Include="RTX\D3D12AccelerationStructures.cpp">
       <Filter>RTX</Filter>
     </ClCompile>
@@ -87,5 +79,10 @@
       <Filter>Primitives</Filter>
     </ClInclude>
     <ClInclude Include="16-Light.hpp" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Data\Shaders.hlsl">
+      <Filter>Data</Filter>
+    </None>
   </ItemGroup>
 </Project>
